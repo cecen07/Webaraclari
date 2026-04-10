@@ -423,6 +423,70 @@ select.filter-sel:focus{border-color:var(--teal);}
 .gb-text{font-size:.88rem;color:var(--text);line-height:1.65;font-style:italic;}
 .gb-date{font-size:.72rem;color:var(--muted);}
 
+/* ===== ARIZALAR SAYFASI ===== */
+.ariz-layout{max-width:1280px;margin:28px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 300px;gap:24px;}
+@media(max-width:900px){.ariz-layout{grid-template-columns:1fr;}}
+.ariz-main{}
+.ariz-sidebar{}
+.ariz-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.ariz-page-head h2{font-size:1.2rem;font-weight:800;color:var(--navy);}
+
+/* Envanter kartları */
+.envanter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px;}
+.env-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 14px;text-align:center;cursor:pointer;transition:all .22s;
+  border-top:3px solid var(--border);
+}
+.env-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+.env-card.selected{border-top-color:var(--teal);background:var(--teal-light);}
+.env-card.has-ariz{border-top-color:var(--warning);}
+.env-card.critical{border-top-color:var(--danger);}
+.env-ico{font-size:1.8rem;margin-bottom:6px;}
+.env-name{font-size:.82rem;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px;}
+.env-count{font-size:.72rem;color:var(--muted);}
+.env-ariz-badge{background:var(--warning);color:#fff;font-size:.65rem;font-weight:700;padding:1px 7px;border-radius:10px;margin-top:4px;display:inline-block;}
+.env-ariz-badge.critical{background:var(--danger);}
+
+/* Arıza bildirim formu */
+.ariz-form-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:22px;margin-bottom:24px;border-top:3px solid var(--teal);
+}
+.ariz-form-title{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+
+/* Arıza listesi */
+.ariz-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 18px;margin-bottom:12px;
+  border-left:4px solid var(--warning);
+  transition:box-shadow .2s;
+}
+.ariz-card:hover{box-shadow:var(--sh-sm);}
+.ariz-card.durum-acik{border-left-color:var(--danger);}
+.ariz-card.durum-inceleniyor{border-left-color:var(--warning);}
+.ariz-card.durum-cozuldu{border-left-color:var(--success);}
+.ariz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.ariz-title{font-size:.95rem;font-weight:700;color:var(--navy);}
+.ariz-durum{font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;}
+.durum-acik-badge{background:#fee2e2;color:#c0392b;}
+.durum-inceleniyor-badge{background:#fff3cd;color:#854d0e;}
+.durum-cozuldu-badge{background:#d1fdf4;color:#0e7a76;}
+.ariz-device{font-size:.78rem;color:var(--navy-mid);font-weight:600;display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.ariz-desc{font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.ariz-meta{font-size:.73rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.ariz-filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.ariz-filter-btn{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;font-family:var(--font);}
+.ariz-filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+/* Sidebar envanter özeti */
+.ariz-sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.ariz-sidebar-title{font-size:.82rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--teal);}
+.inv-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.83rem;}
+.inv-row:last-child{border-bottom:none;}
+.inv-label{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:500;}
+.inv-num{font-weight:700;color:var(--navy);}
+
 /* ===== FOOTER ===== */
 footer{background:var(--navy);color:rgba(255,255,255,.7);padding:34px 20px;text-align:center;font-size:.83rem;line-height:1.8;}
 footer strong{color:#fff;}
@@ -502,6 +566,7 @@ footer strong{color:#fff;}
     <button class="nav-link active" onclick="showPage('home')">🏠 Ana Sayfa</button>
     <button class="nav-link" onclick="showPage('tools')">🛠️ Araçlar</button>
     <button class="nav-link" onclick="showPage('community')">💬 Topluluk</button>
+    <button class="nav-link" onclick="showPage('arizalar')">🔧 Arızalar</button>
     <button class="nav-link" onclick="showPage('announcements')">📢 Duyurular</button>
     <button class="nav-link" onclick="showPage('guestbook')">📝 Ziyaretçi</button>
   </div>
@@ -528,6 +593,7 @@ footer strong{color:#fff;}
   <button class="nav-link" style="display:block;width:100%;margin-bottom:4px;" onclick="showPage('home');closeMobileMenu()">🏠 Ana Sayfa</button>
   <button class="nav-link" style="display:block;width:100%;margin-bottom:4px;" onclick="showPage('tools');closeMobileMenu()">🛠️ Araçlar</button>
   <button class="nav-link" style="display:block;width:100%;margin-bottom:4px;" onclick="showPage('community');closeMobileMenu()">💬 Topluluk</button>
+  <button class="nav-link" style="display:block;width:100%;margin-bottom:4px;" onclick="showPage('arizalar');closeMobileMenu()">🔧 Arızalar</button>
   <button class="nav-link" style="display:block;width:100%;margin-bottom:4px;" onclick="showPage('announcements');closeMobileMenu()">📢 Duyurular</button>
   <button class="nav-link" style="display:block;width:100%;" onclick="showPage('guestbook');closeMobileMenu()">📝 Ziyaretçi</button>
 </div>
@@ -647,6 +713,121 @@ footer strong{color:#fff;}
 </section>
 
 <!-- ============================================================
+     ARIZALAR
+     ============================================================ -->
+<section class="page-section" id="page-arizalar">
+  <div class="ariz-layout">
+    <!-- Ana içerik -->
+    <div class="ariz-main">
+      <div class="ariz-page-head">
+        <h2>🔧 Sınıf Ekipman Arızaları</h2>
+        <button class="btn btn-teal" onclick="openArizaForm()">+ Arıza Bildir</button>
+      </div>
+
+      <!-- Envanter özeti (tıklanabilir filtre) -->
+      <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Ekipman Seç (Filtrele)</div>
+      <div class="envanter-grid" id="envanterGrid"></div>
+
+      <!-- Filtreler -->
+      <div class="ariz-filters">
+        <button class="ariz-filter-btn active" onclick="setArizFilter('tumü',this)">Tümü</button>
+        <button class="ariz-filter-btn" onclick="setArizFilter('acik',this)">🔴 Açık</button>
+        <button class="ariz-filter-btn" onclick="setArizFilter('inceleniyor',this)">🟡 İnceleniyor</button>
+        <button class="ariz-filter-btn" onclick="setArizFilter('cozuldu',this)">🟢 Çözüldü</button>
+        <button class="ariz-filter-btn" onclick="setArizFilter('mine',this)">📋 Bildirimlerim</button>
+      </div>
+
+      <!-- Arıza listesi -->
+      <div id="arizaList"><div class="loading-overlay"><div class="spinner spinner-lg"></div><span>Arızalar yükleniyor…</span></div></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="ariz-sidebar">
+      <div class="ariz-sidebar-card">
+        <div class="ariz-sidebar-title">📦 Sınıf Envanteri</div>
+        <div class="inv-row"><span class="inv-label">🖥️ Masaüstü Bilgisayar</span><span class="inv-num">8</span></div>
+        <div class="inv-row"><span class="inv-label">💻 Laptop</span><span class="inv-num">12</span></div>
+        <div class="inv-row"><span class="inv-label">🤖 MEBKit Robotik Set</span><span class="inv-num">10</span></div>
+        <div class="inv-row"><span class="inv-label">🚗 MEBKit Mobil Robot</span><span class="inv-num">3</span></div>
+        <div class="inv-row"><span class="inv-label">🖨️ 3D Yazıcı (K1C)</span><span class="inv-num">1</span></div>
+        <div class="inv-row"><span class="inv-label">🧩 Akıl/Zeka Oyunları</span><span class="inv-num">—</span></div>
+        <div class="inv-row"><span class="inv-label">🪑 Portatif Mobilya</span><span class="inv-num">—</span></div>
+      </div>
+
+      <div class="ariz-sidebar-card">
+        <div class="ariz-sidebar-title">📊 Arıza Özeti</div>
+        <div class="inv-row"><span class="inv-label">🔴 Açık</span><span class="inv-num" id="arizCountAcik">—</span></div>
+        <div class="inv-row"><span class="inv-label">🟡 İnceleniyor</span><span class="inv-num" id="arizCountInc">—</span></div>
+        <div class="inv-row"><span class="inv-label">🟢 Çözüldü</span><span class="inv-num" id="arizCountCoz">—</span></div>
+      </div>
+
+      <div class="ariz-sidebar-card" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;">
+        <div class="ariz-sidebar-title" style="color:var(--teal);">📋 Arıza Bildirimi Hakkında</div>
+        <p style="font-size:.82rem;opacity:.85;line-height:1.6;">Yenilikçi Sınıf ekipmanlarında yaşanan arızaları bu bölümden bildirin. Yönetici ekibi inceleyip en kısa sürede müdahale eder.</p>
+        <p style="font-size:.78rem;opacity:.7;margin-top:8px;">Acil durumlar için önce okul yönetimiyle iletişime geçin.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arıza Bildirim Modali -->
+  <div class="modal" id="arizaModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title">🔧 Arıza Bildir</span>
+        <button class="modal-close" onclick="closeModal('arizaModal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ekipman Türü *</label>
+            <select class="form-select" id="arizaEkipman">
+              <option value="">Ekipman seçin…</option>
+              <option value="Masaüstü Bilgisayar">🖥️ Masaüstü Bilgisayar</option>
+              <option value="Laptop">💻 Laptop</option>
+              <option value="MEBKit Robotik Set">🤖 MEBKit Robotik Set</option>
+              <option value="MEBKit Mobil Robot">🚗 MEBKit Mobil Robot</option>
+              <option value="3D Yazıcı (Creality K1C)">🖨️ 3D Yazıcı (Creality K1C)</option>
+              <option value="Akıl/Zeka Oyunları">🧩 Akıl/Zeka Oyunları</option>
+              <option value="Portatif Mobilya">🪑 Portatif Mobilya (Masa/Sandalye)</option>
+              <option value="Diğer">📦 Diğer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cihaz / Seri No (varsa)</label>
+            <input class="form-input" id="arizaCihazNo" placeholder="ör. Laptop #3, Masa No:5">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Arıza Başlığı *</label>
+            <input class="form-input" id="arizaBaslik" placeholder="ör. Ekran açılmıyor, tekerlek kırık…" maxlength="120">
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Arıza Açıklaması *</label>
+            <textarea class="form-textarea" id="arizaAciklama" placeholder="Arızayı detaylı açıklayın. Ne zaman fark ettiniz? Nasıl bir belirti var?" style="min-height:100px;" maxlength="800"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Öncelik</label>
+            <select class="form-select" id="arizaOncelik">
+              <option value="normal">🟡 Normal</option>
+              <option value="acil">🔴 Acil (Kullanım durdu)</option>
+              <option value="dusuk">🟢 Düşük (Kullanılabilir)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bildiren Öğretmen</label>
+            <input class="form-input" id="arizaBildiren" placeholder="Ad Soyad (opsiyonel)">
+          </div>
+        </div>
+        <div class="alert" id="arizaFormAlert" style="display:none;margin-top:8px;"></div>
+        <div style="display:flex;gap:10px;margin-top:8px;">
+          <button class="btn btn-teal" onclick="submitAriza()">📤 Bildir</button>
+          <button class="btn btn-ghost" onclick="closeModal('arizaModal')">İptal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      DUYURULAR
      ============================================================ -->
 <section class="page-section" id="page-announcements">
@@ -728,6 +909,7 @@ footer strong{color:#fff;}
       <button class="admin-nav-link" onclick="switchAdmin('guestbook-admin')"><span class="dot"></span>Ziyaretçi Defteri</button>
       <button class="admin-nav-link" onclick="switchAdmin('users-admin')"><span class="dot"></span>Üyeler</button>
       <button class="admin-nav-link" onclick="switchAdmin('qa-admin')"><span class="dot"></span>Q&A Yönetimi</button>
+      <button class="admin-nav-link" onclick="switchAdmin('arizalar-admin')"><span class="dot"></span>🔧 Arıza Yönetimi</button>
       <button class="admin-nav-link" onclick="switchAdmin('firebase-admin')"><span class="dot"></span>Firebase Ayarları</button>
       <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
       <button class="admin-nav-link" onclick="showPage('home')" style="color:var(--muted);"><span class="dot"></span>← Ana Sayfaya Dön</button>
@@ -845,23 +1027,40 @@ footer strong{color:#fff;}
         <div class="admin-panel-head"><h2>💬 Q&A Yönetimi</h2></div>
         <div id="adminQaList"></div>
       </div>
+      <!-- Arıza Yönetimi -->
+      <div class="admin-panel" id="ap-arizalar-admin">
+        <div class="admin-panel-head">
+          <h2>🔧 Arıza Yönetimi</h2>
+          <button class="btn btn-teal" onclick="showPage('arizalar');openArizaForm()">+ Arıza Bildir</button>
+        </div>
+        <div class="ariz-filters" style="margin-bottom:16px;">
+          <button class="ariz-filter-btn active" onclick="setAdminArizaFilter('tumü',this)">Tümü</button>
+          <button class="ariz-filter-btn" onclick="setAdminArizaFilter('acik',this)">🔴 Açık</button>
+          <button class="ariz-filter-btn" onclick="setAdminArizaFilter('inceleniyor',this)">🟡 İnceleniyor</button>
+          <button class="ariz-filter-btn" onclick="setAdminArizaFilter('cozuldu',this)">🟢 Çözüldü</button>
+        </div>
+        <div id="adminArizaList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+      </div>
+
       <!-- Firebase Ayarları -->
       <div class="admin-panel" id="ap-firebase-admin">
         <div class="admin-panel-head"><h2>⚙️ Firebase Ayarları</h2></div>
-        <div class="alert alert-success" style="margin-bottom:16px;">
-          ✅ Firebase projeniz bağlı: <strong>fclwebaraclari</strong> — Tüm özellikler aktif.
+        <div class="alert alert-success" id="fbConnectedMsg" style="margin-bottom:16px;display:none;">
+          ✅ Firebase projeniz bağlı. Tüm özellikler aktif.
+        </div>
+        <div class="alert alert-warn" id="fbDisconnectedMsg" style="margin-bottom:16px;">
+          ⚠️ Firebase henüz yapılandırılmadı. Üyelik ve veri özellikleri için aşağıdaki alanları doldurun.
         </div>
         <div class="alert alert-info" style="margin-bottom:16px;">
-          Farklı bir Firebase projesi bağlamak isterseniz aşağıdaki bilgileri güncelleyin.
-          <a href="https://console.firebase.google.com/project/fclwebaraclari" target="_blank" style="color:var(--navy);font-weight:700;margin-left:6px;">Firebase Console →</a>
+          Firebase config bilgilerini <a href="https://console.firebase.google.com" target="_blank" style="color:var(--navy);font-weight:700;">Firebase Console</a> → Proje Ayarları → Genel → "Uygulamalar" bölümünden alabilirsiniz. Bu bilgiler <strong>tarayıcı localStorage</strong>'ınıza kaydedilir; GitHub veya kaynak koda yazılmaz.
         </div>
         <div class="form-grid" id="fbConfigForm">
-          <div class="form-group"><label class="form-label">apiKey</label><input class="form-input" id="fb_apiKey" value="AIzaSyBfgPdmhwmiWbgbohx3gVIc2utOK-ge8X0"></div>
-          <div class="form-group"><label class="form-label">authDomain</label><input class="form-input" id="fb_authDomain" value="fclwebaraclari.firebaseapp.com"></div>
-          <div class="form-group"><label class="form-label">projectId</label><input class="form-input" id="fb_projectId" value="fclwebaraclari"></div>
-          <div class="form-group"><label class="form-label">storageBucket</label><input class="form-input" id="fb_storageBucket" value="fclwebaraclari.firebasestorage.app"></div>
-          <div class="form-group"><label class="form-label">messagingSenderId</label><input class="form-input" id="fb_messagingSenderId" value="886264939634"></div>
-          <div class="form-group"><label class="form-label">appId</label><input class="form-input" id="fb_appId" value="1:886264939634:web:d14171e7cda72afbf16eeb"></div>
+          <div class="form-group"><label class="form-label">apiKey</label><input class="form-input" id="fb_apiKey" value="" placeholder="AIzaSy…"></div>
+          <div class="form-group"><label class="form-label">authDomain</label><input class="form-input" id="fb_authDomain" value="" placeholder="projem.firebaseapp.com"></div>
+          <div class="form-group"><label class="form-label">projectId</label><input class="form-input" id="fb_projectId" value="" placeholder="projem"></div>
+          <div class="form-group"><label class="form-label">storageBucket</label><input class="form-input" id="fb_storageBucket" value="" placeholder="projem.firebasestorage.app"></div>
+          <div class="form-group"><label class="form-label">messagingSenderId</label><input class="form-input" id="fb_messagingSenderId" value="" placeholder="886264939634"></div>
+          <div class="form-group"><label class="form-label">appId</label><input class="form-input" id="fb_appId" value="" placeholder="1:…:web:…"></div>
           <div class="form-group form-full">
             <label class="form-label">Yönetici E-posta(ları) <span style="font-weight:400;color:var(--muted);">(virgülle ayrın — bu kişiler Admin paneline erişebilir)</span></label>
             <input class="form-input" id="fb_adminEmails" value="" placeholder="admin@meb.gov.tr, ikinci@meb.gov.tr">
@@ -1237,29 +1436,34 @@ function initFirebase(config){
   }catch(e){console.error("Firebase init hatası:",e);return false;}
 }
 
-/* ---- HARDCODED FIREBASE CONFIG ---- */
+/* ---- FIREBASE CONFIG (kaynak kodda saklanmaz — localStorage'dan okunur) ---- */
+/* GÜVENLİK: API key'i burada bırakmayın. Admin paneli → Firebase Ayarları üzerinden
+   girin; tarayıcı localStorage'ına kaydedilir ve GitHub'a yüklenmez.           */
 const HARDCODED_FB_CONFIG={
-  apiKey:"AIzaSyBfgPdmhwmiWbgbohx3gVIc2utOK-ge8X0",
-  authDomain:"fclwebaraclari.firebaseapp.com",
-  projectId:"fclwebaraclari",
-  storageBucket:"fclwebaraclari.firebasestorage.app",
-  messagingSenderId:"886264939634",
-  appId:"1:886264939634:web:d14171e7cda72afbf16eeb",
-  measurementId:"G-SL5B3X5PK8",
-  adminEmails:"ahmetcecen@yenilikcisinif.meb.gov.tr"
+  apiKey:"",           /* GitHub'a commit etmeyin — Admin panelinden girin */
+  authDomain:"",
+  projectId:"",
+  storageBucket:"",
+  messagingSenderId:"",
+  appId:"",
+  measurementId:"",
+  adminEmails:""
 };
 
 function tryAutoInit(){
-  // Önce localStorage'daki config'i dene (admin panelinden güncellenmiş olabilir)
+  // Sadece localStorage'daki config'i kullan (hardcoded API key yok)
   const savedCfg=loadFirebaseConfigFromStorage();
-  const cfg=savedCfg&&savedCfg.apiKey ? savedCfg : HARDCODED_FB_CONFIG;
-  ADMIN_EMAILS=(cfg.adminEmails||"").split(",").map(e=>e.trim()).filter(Boolean);
-  const ok=initFirebase(cfg);
-  if(ok){
-    document.getElementById("configBanner").classList.add("hidden");
-  } else {
-    loadGuestbookLocal();
+  if(savedCfg&&savedCfg.apiKey){
+    ADMIN_EMAILS=(savedCfg.adminEmails||"").split(",").map(e=>e.trim()).filter(Boolean);
+    const ok=initFirebase(savedCfg);
+    if(ok){
+      document.getElementById("configBanner").classList.add("hidden");
+      return;
+    }
   }
+  // Config yok ya da geçersiz → Banner'ı göster
+  document.getElementById("configBanner").classList.remove("hidden");
+  loadGuestbookLocal();
 }
 
 function loadFirebaseConfigFromStorage(){
@@ -1322,9 +1526,20 @@ async function saveFirebaseConfig(){
   else{showAlert("fbConfigAlert","error","Bağlantı hatası. Bilgileri kontrol edin.");}
 }
 function loadFirebaseConfig(){
-  const cfg=loadFirebaseConfigFromStorage()||HARDCODED_FB_CONFIG;
+  const cfg=loadFirebaseConfigFromStorage()||{};
   const fields=["apiKey","authDomain","projectId","storageBucket","messagingSenderId","appId","adminEmails"];
   fields.forEach(k=>{const el=document.getElementById("fb_"+k);if(el)el.value=cfg[k]||"";});
+  // Bağlantı durumu göster
+  const connMsg=document.getElementById("fbConnectedMsg");
+  const discMsg=document.getElementById("fbDisconnectedMsg");
+  if(fbInitialized&&cfg.projectId){
+    if(connMsg)connMsg.style.display="flex";
+    if(connMsg)connMsg.textContent="✅ Firebase projeniz bağlı: "+cfg.projectId+" — Tüm özellikler aktif.";
+    if(discMsg)discMsg.style.display="none";
+  }else{
+    if(connMsg)connMsg.style.display="none";
+    if(discMsg)discMsg.style.display="flex";
+  }
   // Admin e-posta listesini de Firestore'dan çek
   if(db){
     db.collection("settings").doc("admin").get().then(snap=>{
@@ -1337,7 +1552,7 @@ function loadFirebaseConfig(){
   }
 }
 function clearFirebaseConfig(){
-  if(!confirm("Firebase ayarları varsayılana (fclwebaraclari) dönsün mü?"))return;
+  if(!confirm("Firebase ayarları sıfırlansın mı? Üyelik ve veri özellikleri devre dışı kalacak."))return;
   localStorage.removeItem("ys_fb_config");
   location.reload();
 }
@@ -2130,6 +2345,7 @@ function showPage(page){
   // Sayfaya özel yüklemeler
   if(page==="profile")renderProfile();
   if(page==="community")loadQuestions();
+  if(page==="arizalar"){renderEnvanterGrid();loadArizalar();}
   if(page==="admin"){
     if(!currentUser){openAuth("login");return;}
     loadAdminUsers();loadAdminQa();loadDashboard();renderAdminTools();renderBadgeCheckboxes();populateAdminCatSelect();
@@ -2143,6 +2359,7 @@ function switchAdmin(panel){
   const p=document.getElementById("ap-"+panel);if(p)p.classList.add("active");
   document.querySelectorAll(".admin-nav-link").forEach(l=>{if(l.getAttribute("onclick")&&l.getAttribute("onclick").includes(panel))l.classList.add("active");});
   if(panel==="guestbook-admin"&&db)renderAdminGuestbook();
+  if(panel==="arizalar-admin")loadAdminArizalar();
   if(panel==="users-admin")loadAdminUsers();
   if(panel==="qa-admin")loadAdminQa();
   if(panel==="firebase-admin")loadFirebaseConfig();
@@ -2150,6 +2367,263 @@ function switchAdmin(panel){
   if(panel==="add-tool"){renderBadgeCheckboxes();populateAdminCatSelect();}
   if(panel==="tools-admin")renderAdminTools();
   if(panel==="announcements-admin"&&db)loadAnnouncements();
+}
+
+/* ============================================================
+   ARIZALAR
+   ============================================================ */
+const ENVANTER=[
+  {id:"masaustu",   icon:"🖥️", name:"Masaüstü Bilgisayar",    adet:8,  notlar:"İşlemci, ekran, klavye/fare sorunları"},
+  {id:"laptop",     icon:"💻", name:"Laptop",                  adet:12, notlar:"Batarya, ekran, açılmama sorunları"},
+  {id:"mebkit-rob", icon:"🤖", name:"MEBKit Robotik Set",      adet:10, notlar:"Kart, sensör, kablo, yazılım sorunları"},
+  {id:"mebkit-mob", icon:"🚗", name:"MEBKit Mobil Robot",      adet:3,  notlar:"Motor, tekerlek, bağlantı sorunları"},
+  {id:"3dyazici",   icon:"🖨️", name:"3D Yazıcı (Creality K1C)",adet:1,  notlar:"Filament, nozzle, yatak seviyesi, yazılım"},
+  {id:"zeka-oyun",  icon:"🧩", name:"Akıl/Zeka Oyunları",      adet:0,  notlar:"Eksik parça, hasar"},
+  {id:"mobilya",    icon:"🪑", name:"Portatif Mobilya",         adet:0,  notlar:"Kırık masa/sandalye"},
+  {id:"diger",      icon:"📦", name:"Diğer Ekipman",            adet:0,  notlar:""}
+];
+
+let arizaFilter="tumü";
+let arizaEkipmanFilter=null;
+let localArizalar=[];
+
+function renderEnvanterGrid(){
+  const grid=document.getElementById("envanterGrid");
+  if(!grid)return;
+  grid.innerHTML=ENVANTER.map(e=>{
+    const cnt=localArizalar.filter(a=>a.ekipman===e.name&&a.durum!=="cozuldu").length;
+    const critical=localArizalar.filter(a=>a.ekipman===e.name&&a.oncelik==="acil"&&a.durum!=="cozuldu").length;
+    const cls=critical?"critical":cnt>0?"has-ariz":"";
+    const sel=arizaEkipmanFilter===e.id?"selected":"";
+    return`<div class="env-card ${cls} ${sel}" onclick="toggleEnvanterFilter('${e.id}')">
+      <div class="env-ico">${e.icon}</div>
+      <div class="env-name">${e.name}</div>
+      ${e.adet>0?`<div class="env-count">${e.adet} adet</div>`:""}
+      ${cnt>0?`<div class="env-ariz-badge ${critical?"critical":""}">${cnt} açık arıza</div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function toggleEnvanterFilter(id){
+  arizaEkipmanFilter=arizaEkipmanFilter===id?null:id;
+  renderEnvanterGrid();
+  renderArizaList();
+}
+
+function setArizFilter(f,btn){
+  arizaFilter=f;
+  document.querySelectorAll(".ariz-filter-btn").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  renderArizaList();
+}
+
+async function loadArizalar(){
+  if(db){
+    db.collection("arizalar").orderBy("createdAt","desc").onSnapshot(snap=>{
+      localArizalar=[];
+      snap.forEach(d=>localArizalar.push({id:d.id,...d.data()}));
+      renderEnvanterGrid();
+      renderArizaList();
+      updateArizaCounts();
+    });
+  }else{
+    // localStorage fallback
+    try{localArizalar=JSON.parse(localStorage.getItem("ys_arizalar")||"[]");}catch(e){localArizalar=[];}
+    renderEnvanterGrid();
+    renderArizaList();
+    updateArizaCounts();
+  }
+}
+
+function updateArizaCounts(){
+  const acik=localArizalar.filter(a=>a.durum==="acik").length;
+  const inc=localArizalar.filter(a=>a.durum==="inceleniyor").length;
+  const coz=localArizalar.filter(a=>a.durum==="cozuldu").length;
+  const ea=document.getElementById("arizCountAcik");
+  const ei=document.getElementById("arizCountInc");
+  const ec=document.getElementById("arizCountCoz");
+  if(ea)ea.textContent=acik;
+  if(ei)ei.textContent=inc;
+  if(ec)ec.textContent=coz;
+}
+
+function renderArizaList(){
+  const cont=document.getElementById("arizaList");
+  if(!cont)return;
+  let list=[...localArizalar];
+  // Ekipman filtresi
+  if(arizaEkipmanFilter){
+    const env=ENVANTER.find(e=>e.id===arizaEkipmanFilter);
+    if(env)list=list.filter(a=>a.ekipman===env.name);
+  }
+  // Durum filtresi
+  if(arizaFilter==="acik")list=list.filter(a=>a.durum==="acik");
+  else if(arizaFilter==="inceleniyor")list=list.filter(a=>a.durum==="inceleniyor");
+  else if(arizaFilter==="cozuldu")list=list.filter(a=>a.durum==="cozuldu");
+  else if(arizaFilter==="mine"&&currentUser)list=list.filter(a=>a.authorId===currentUser.uid);
+
+  if(list.length===0){
+    cont.innerHTML=`<div class="empty">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <h3>Arıza kaydı yok</h3>
+      <p>Bu filtreye uygun arıza bildirilmemiş.</p>
+    </div>`;
+    return;
+  }
+
+  const durumBadge=(d)=>{
+    if(d==="acik")return'<span class="ariz-durum durum-acik-badge">🔴 Açık</span>';
+    if(d==="inceleniyor")return'<span class="ariz-durum durum-inceleniyor-badge">🟡 İnceleniyor</span>';
+    if(d==="cozuldu")return'<span class="ariz-durum durum-cozuldu-badge">🟢 Çözüldü</span>';
+    return'<span class="ariz-durum">—</span>';
+  };
+  const oncelikLabel=(o)=>{if(o==="acil")return"🔴 Acil";if(o==="dusuk")return"🟢 Düşük";return"🟡 Normal";};
+  const envIco=(name)=>{const e=ENVANTER.find(x=>x.name===name);return e?e.icon:"📦";};
+
+  cont.innerHTML=list.map(a=>`
+    <div class="ariz-card durum-${a.durum||"acik"}">
+      <div class="ariz-head">
+        <div class="ariz-title">${esc(a.baslik||"")}</div>
+        ${durumBadge(a.durum||"acik")}
+      </div>
+      <div class="ariz-device">${envIco(a.ekipman)} ${esc(a.ekipman||"")}${a.cihazNo?` · ${esc(a.cihazNo)}`:""}
+        <span style="color:var(--muted);font-weight:400;">· ${oncelikLabel(a.oncelik)}</span>
+      </div>
+      <div class="ariz-desc">${esc(a.aciklama||"").replace(/\n/g,"<br>")}</div>
+      <div class="ariz-meta">
+        <span>👤 ${esc(a.bildiren||a.authorName||"Anonim")}</span>
+        <span>🕐 ${a.createdAt?.toDate?.().toLocaleDateString("tr-TR")||a.createdAtStr||"—"}</span>
+        ${(currentUser&&(ADMIN_EMAILS.includes(currentUser.email)||currentUserData?.role==="admin"))?`
+          <select style="font-size:.72rem;padding:2px 6px;border:1px solid var(--border);border-radius:5px;font-family:var(--font);background:#fff;cursor:pointer;margin-left:auto;"
+            onchange="updateArizaDurum('${a.id}',this.value)">
+            <option value="acik"${a.durum==="acik"?" selected":""}>🔴 Açık</option>
+            <option value="inceleniyor"${a.durum==="inceleniyor"?" selected":""}>🟡 İnceleniyor</option>
+            <option value="cozuldu"${a.durum==="cozuldu"?" selected":""}>🟢 Çözüldü</option>
+          </select>
+          <button class="btn btn-danger" style="padding:2px 9px;font-size:.7rem;" onclick="deleteAriza('${a.id}')">🗑️</button>
+        `:""}
+      </div>
+    </div>
+  `).join("");
+}
+
+function openArizaForm(){
+  if(!currentUser&&fbInitialized){openAuth("login");return;}
+  openModal("arizaModal");
+  // Giriş yapılmışsa bildiren alanını otomatik doldur
+  const bildirenEl=document.getElementById("arizaBildiren");
+  if(bildirenEl&&currentUser)bildirenEl.value=currentUser.displayName||"";
+}
+
+async function submitAriza(){
+  const ekipman=document.getElementById("arizaEkipman")?.value;
+  const baslik=document.getElementById("arizaBaslik")?.value.trim();
+  const aciklama=document.getElementById("arizaAciklama")?.value.trim();
+  const oncelik=document.getElementById("arizaOncelik")?.value||"normal";
+  const cihazNo=document.getElementById("arizaCihazNo")?.value.trim();
+  const bildiren=document.getElementById("arizaBildiren")?.value.trim();
+
+  if(!ekipman){showAlert("arizaFormAlert","error","Ekipman türü seçiniz.");return;}
+  if(!baslik){showAlert("arizaFormAlert","error","Arıza başlığı zorunludur.");return;}
+  if(!aciklama){showAlert("arizaFormAlert","error","Arıza açıklaması zorunludur.");return;}
+
+  const data={
+    ekipman,baslik,aciklama,oncelik,cihazNo,
+    bildiren:bildiren||(currentUser?.displayName||"Anonim"),
+    authorId:currentUser?.uid||"",
+    authorName:currentUser?.displayName||bildiren||"Anonim",
+    durum:"acik",
+    createdAtStr:new Date().toLocaleDateString("tr-TR")
+  };
+
+  if(db){
+    data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection("arizalar").add(data);
+  }else{
+    // localStorage fallback
+    data.id="ariz_"+Date.now();
+    localArizalar.unshift(data);
+    localStorage.setItem("ys_arizalar",JSON.stringify(localArizalar));
+    renderEnvanterGrid();
+    renderArizaList();
+    updateArizaCounts();
+  }
+
+  closeModal("arizaModal");
+  document.getElementById("arizaEkipman").value="";
+  document.getElementById("arizaBaslik").value="";
+  document.getElementById("arizaAciklama").value="";
+  document.getElementById("arizaCihazNo").value="";
+}
+
+async function updateArizaDurum(id,durum){
+  if(db){
+    await db.collection("arizalar").doc(id).update({durum});
+  }else{
+    const a=localArizalar.find(x=>x.id===id);
+    if(a){a.durum=durum;localStorage.setItem("ys_arizalar",JSON.stringify(localArizalar));}
+    renderEnvanterGrid();
+    renderArizaList();
+    updateArizaCounts();
+  }
+}
+
+async function deleteAriza(id){
+  if(!confirm("Bu arıza kaydını silmek istiyor musunuz?"))return;
+  if(db){
+    await db.collection("arizalar").doc(id).delete();
+  }else{
+    const idx=localArizalar.findIndex(x=>x.id===id);
+    if(idx>=0){localArizalar.splice(idx,1);localStorage.setItem("ys_arizalar",JSON.stringify(localArizalar));}
+    renderEnvanterGrid();
+    renderArizaList();
+    updateArizaCounts();
+  }
+}
+
+/* --- ADMİN: ARIZALAR --- */
+let adminArizaFilter="tumü";
+function setAdminArizaFilter(f,btn){
+  adminArizaFilter=f;
+  document.querySelectorAll("#ap-arizalar-admin .ariz-filter-btn").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  renderAdminArizaList();
+}
+async function loadAdminArizalar(){
+  if(db){
+    db.collection("arizalar").orderBy("createdAt","desc").onSnapshot(snap=>{
+      localArizalar=[];
+      snap.forEach(d=>localArizalar.push({id:d.id,...d.data()}));
+      renderAdminArizaList();
+    });
+  }else{
+    try{localArizalar=JSON.parse(localStorage.getItem("ys_arizalar")||"[]");}catch(e){localArizalar=[];}
+    renderAdminArizaList();
+  }
+}
+function renderAdminArizaList(){
+  const cont=document.getElementById("adminArizaList");
+  if(!cont)return;
+  let list=[...localArizalar];
+  if(adminArizaFilter!=="tumü")list=list.filter(a=>a.durum===adminArizaFilter);
+  const envIco=(name)=>{const e=ENVANTER.find(x=>x.name===name);return e?e.icon:"📦";};
+  if(list.length===0){cont.innerHTML='<div class="empty"><h3>Arıza kaydı yok</h3></div>';return;}
+  cont.innerHTML=`<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Ekipman</th><th>Başlık / Açıklama</th><th>Öncelik</th><th>Bildiren</th><th>Tarih</th><th>Durum</th><th>Sil</th></tr></thead>
+    <tbody>${list.map(a=>`<tr>
+      <td>${envIco(a.ekipman)} <span style="font-size:.78rem;">${esc(a.ekipman||"")}${a.cihazNo?`<br><span style="color:var(--muted);font-size:.72rem;">${esc(a.cihazNo)}</span>`:""}</span></td>
+      <td style="font-weight:600;max-width:220px;">${esc(a.baslik||"")}<br><span style="font-size:.74rem;color:var(--muted);font-weight:400;">${esc((a.aciklama||"").substring(0,70))}${(a.aciklama||"").length>70?"…":""}</span></td>
+      <td><span class="status-badge ${a.oncelik==="acil"?"st-inactive":a.oncelik==="dusuk"?"st-active":"st-pending"}">${a.oncelik==="acil"?"🔴 Acil":a.oncelik==="dusuk"?"🟢 Düşük":"🟡 Normal"}</span></td>
+      <td style="font-size:.8rem;">${esc(a.bildiren||a.authorName||"—")}</td>
+      <td style="font-size:.77rem;color:var(--muted);">${a.createdAt?.toDate?.().toLocaleDateString("tr-TR")||a.createdAtStr||"—"}</td>
+      <td><select style="font-size:.75rem;padding:3px 7px;border:1px solid var(--border);border-radius:5px;font-family:var(--font);" onchange="updateArizaDurum('${a.id}',this.value)">
+        <option value="acik"${a.durum==="acik"?" selected":""}>🔴 Açık</option>
+        <option value="inceleniyor"${a.durum==="inceleniyor"?" selected":""}>🟡 İnceleniyor</option>
+        <option value="cozuldu"${a.durum==="cozuldu"?" selected":""}>🟢 Çözüldü</option>
+      </select></td>
+      <td><button class="btn btn-danger" style="padding:3px 10px;font-size:.74rem;" onclick="deleteAriza('${a.id}')">🗑️</button></td>
+    </tr>`).join("")}
+    </tbody></table></div>`;
 }
 
 /* --- BAŞLAT --- */

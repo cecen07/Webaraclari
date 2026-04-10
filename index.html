@@ -1074,6 +1074,20 @@ footer strong{color:#fff;}
         </div>
         <div class="alert" id="fbConfigAlert" style="display:none;margin-top:12px;"></div>
 
+        <!-- Kalıcı Çözüm: Koda Göm -->
+        <div style="margin-top:20px;background:#fffbeb;border:1px solid #f59e0b;border-radius:var(--r);padding:18px;">
+          <div style="font-size:.88rem;font-weight:800;color:#854d0e;margin-bottom:8px;">⚠️ Gizli Sekme / Farklı Tarayıcı Sorunu</div>
+          <p style="font-size:.83rem;color:#854d0e;line-height:1.6;margin-bottom:12px;">
+            Config sadece bu tarayıcının localStorage'ında. Gizli sekme, başka cihaz veya başka tarayıcıda üyelik çalışmaz.<br>
+            <strong>Kalıcı çözüm:</strong> Aşağıdaki satırı kopyalayıp <code>index.html</code>'deki <code>HARDCODED_FB_CONFIG</code> bloğuna yapıştırın, GitHub'a commit edin.
+          </p>
+          <button class="btn btn-ghost" style="border-color:#f59e0b;color:#854d0e;margin-bottom:10px;" onclick="generateHardcodedLine()">📋 Kod Satırını Oluştur</button>
+          <div id="hardcodedOutput" style="display:none;">
+            <pre id="hardcodedLine" style="background:#1e293b;color:#86efac;padding:12px;border-radius:var(--r-sm);font-size:.73rem;overflow-x:auto;line-height:1.8;cursor:pointer;" onclick="copyHardcodedLine()" title="Tıkla — kopyala"></pre>
+            <div style="font-size:.75rem;color:#854d0e;margin-top:6px;">👆 Koda tıkla, kopyala → <code>index.html</code>'deki boş <code>apiKey:""</code> satırlarını bunlarla değiştir → GitHub'a commit et.</div>
+          </div>
+        </div>
+
         <!-- Firebase Kuralları Rehberi -->
         <div style="margin-top:28px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
           <div style="font-size:.88rem;font-weight:800;color:var(--navy);margin-bottom:12px;">📋 Firebase Güvenlik Kuralları (Firestore)</div>
@@ -1452,14 +1466,16 @@ const HARDCODED_FB_CONFIG={
 };
 
 function tryAutoInit(){
-  // Banner normal kullanicilara HIC gosterilmez - sadece admin Firebase sekmesinde gorunur
   document.getElementById("configBanner").classList.add("hidden");
+  // Önce localStorage (admin panelinden kaydedilmiş), yoksa hardcoded config
   const savedCfg=loadFirebaseConfigFromStorage();
-  if(savedCfg&&savedCfg.apiKey){
-    ADMIN_EMAILS=(savedCfg.adminEmails||"").split(",").map(e=>e.trim()).filter(Boolean);
-    initFirebase(savedCfg);
+  const cfg=(savedCfg&&savedCfg.apiKey) ? savedCfg
+           :(HARDCODED_FB_CONFIG.apiKey)  ? HARDCODED_FB_CONFIG
+           : null;
+  if(cfg){
+    ADMIN_EMAILS=(cfg.adminEmails||"").split(",").map(e=>e.trim()).filter(Boolean);
+    initFirebase(cfg);
   } else {
-    // Config yok - site arac katalogu olarak calisir, uyelik/veri ozellikleri devre disi
     loadGuestbookLocal();
   }
 }
@@ -1511,12 +1527,13 @@ async function saveFirebaseConfig(){
     appId:v("fb_appId"),adminEmails:v("fb_adminEmails")
   };
   if(!cfg.apiKey||!cfg.projectId){showAlert("fbConfigAlert","error","apiKey ve projectId zorunludur.");return;}
+  // HARDCODED_FB_CONFIG'i de güncelle (gizli sekme / localStorage yokken çalışsın)
+  Object.assign(HARDCODED_FB_CONFIG,cfg);
   // Admin e-postalarını Firestore'a da kaydet
   if(db&&cfg.adminEmails){
     try{await db.collection("settings").doc("admin").set({adminEmails:cfg.adminEmails},{merge:true});}catch(e){}
     ADMIN_EMAILS=cfg.adminEmails.split(",").map(e=>e.trim()).filter(Boolean);
   }
-  // Config değiştiyse localStorage'a kaydet ve yeniden başlat
   const current=loadFirebaseConfigFromStorage();
   if(current&&current.apiKey===cfg.apiKey&&current.projectId===cfg.projectId){
     showAlert("fbConfigAlert","success","✅ Admin e-postaları güncellendi!");
@@ -1553,6 +1570,18 @@ function loadFirebaseConfig(){
     }).catch(()=>{});
   }
 }
+function generateHardcodedLine(){
+  const cfg=loadFirebaseConfigFromStorage()||{};
+  if(!cfg.apiKey){alert("Önce Firebase bilgilerini kaydedin.");return;}
+  const line=`const HARDCODED_FB_CONFIG={\n  apiKey:"${cfg.apiKey}",\n  authDomain:"${cfg.authDomain||""}",\n  projectId:"${cfg.projectId||""}",\n  storageBucket:"${cfg.storageBucket||""}",\n  messagingSenderId:"${cfg.messagingSenderId||""}",\n  appId:"${cfg.appId||""}",\n  measurementId:"${cfg.measurementId||""}",\n  adminEmails:"${cfg.adminEmails||""}"\n};`;
+  document.getElementById("hardcodedLine").textContent=line;
+  document.getElementById("hardcodedOutput").style.display="block";
+}
+function copyHardcodedLine(){
+  const txt=document.getElementById("hardcodedLine").textContent;
+  navigator.clipboard.writeText(txt).then(()=>alert("Kopyalandı! index.html'deki HARDCODED_FB_CONFIG bloğunu bununla değiştirin.")).catch(()=>alert("Manuel kopyalayın."));
+}
+
 function clearFirebaseConfig(){
   if(!confirm("Firebase ayarları sıfırlansın mı? Üyelik ve veri özellikleri devre dışı kalacak."))return;
   localStorage.removeItem("ys_fb_config");

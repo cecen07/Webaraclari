@@ -1428,9 +1428,7 @@ function initFirebase(config){
       }
     }).catch(()=>{});
     auth.onAuthStateChanged(handleAuthChange);
-    // Firebase hazir - giris/uye ol butonlarini goster
-    const guestNav=document.getElementById("navAuthGuest");
-    if(guestNav&&!currentUser)guestNav.style.display="flex";
+    // Firebase hazir - giris/uye ol butonlarini hemen goster (handleAuthChange zaten yonetecek)
     syncToolsFromFirebase();
     loadAnnouncements();
     loadGuestbookApproved();
@@ -1577,7 +1575,7 @@ function handleAuthChange(user){
       document.getElementById("adminNavBtn").style.display="block";
     }
   }else{
-    if(fbInitialized)document.getElementById("navAuthGuest").style.display="flex";
+    document.getElementById("navAuthGuest").style.display="flex";
     document.getElementById("navAuthUser").style.display="none";
     document.getElementById("adminNavBtn").style.display="none";
     currentUserData=null;

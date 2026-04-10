@@ -1019,8 +1019,85 @@ footer strong{color:#fff;}
       </div>
       <!-- Üyeler -->
       <div class="admin-panel" id="ap-users-admin">
-        <div class="admin-panel-head"><h2>👥 Üye Yönetimi</h2></div>
-        <div class="table-wrap"><table class="data-table"><thead><tr><th>Ad Soyad</th><th>E-posta</th><th>Okul</th><th>Kayıt</th><th>Rol</th><th>İşlem</th></tr></thead><tbody id="adminUsersTbody"></tbody></table></div>
+        <div class="admin-panel-head">
+          <h2>👥 Üye Yönetimi</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input class="form-input" id="userSearchInput" placeholder="İsim veya e-posta ara…" oninput="filterAdminUsers()" style="max-width:220px;">
+            <select class="filter-sel" id="userRoleFilter" onchange="filterAdminUsers()" style="min-width:130px;">
+              <option value="">Tüm Roller</option>
+              <option value="member">Üye</option>
+              <option value="admin">Yönetici</option>
+              <option value="banned">Engelli</option>
+            </select>
+            <button class="btn btn-ghost" onclick="loadAdminUsers()">🔄 Yenile</button>
+          </div>
+        </div>
+
+        <!-- Özet sayaçlar -->
+        <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;" id="userStatsRow"></div>
+
+        <!-- Tablo -->
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Üye</th>
+                <th>E-posta</th>
+                <th>Okul / Branş</th>
+                <th>Kayıt Tarihi</th>
+                <th>Durum</th>
+                <th>Soru / Yanıt</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersTbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Üye Detay / Not Modal -->
+        <div class="modal" id="userDetailModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-title" id="userDetailTitle">👤 Üye Detayı</span>
+              <button class="modal-close" onclick="closeModal('userDetailModal')">×</button>
+            </div>
+            <div class="modal-body" id="userDetailBody"></div>
+          </div>
+        </div>
+
+        <!-- Uyarı Gönder Modal -->
+        <div class="modal" id="warnUserModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-title">⚠️ Kullanıcıya Uyarı Gönder</span>
+              <button class="modal-close" onclick="closeModal('warnUserModal')">×</button>
+            </div>
+            <div class="modal-body">
+              <div class="alert alert-warn" style="margin-bottom:14px;">Bu uyarı mesajı kullanıcının bir sonraki girişinde ekranda gösterilecektir.</div>
+              <input type="hidden" id="warnUserId">
+              <div class="form-group">
+                <label class="form-label">Uyarı Nedeni</label>
+                <select class="form-select" id="warnReason">
+                  <option value="uygunsuz_icerik">Uygunsuz içerik paylaşımı</option>
+                  <option value="spam">Spam / tekrarlayan mesaj</option>
+                  <option value="yaniltici">Yanıltıcı bilgi paylaşımı</option>
+                  <option value="kural_ihlali">Platform kurallarını ihlal</option>
+                  <option value="diger">Diğer</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Uyarı Mesajı *</label>
+                <textarea class="form-textarea" id="warnMessage" placeholder="Kullanıcıya gösterilecek uyarı metnini yazın…" style="min-height:90px;"></textarea>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button class="btn btn-teal" onclick="sendWarning()">⚠️ Uyarı Gönder</button>
+                <button class="btn btn-ghost" onclick="closeModal('warnUserModal')">İptal</button>
+              </div>
+              <div class="alert" id="warnAlert" style="display:none;margin-top:10px;"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
       <!-- Q&A Yönetimi -->
       <div class="admin-panel" id="ap-qa-admin">
@@ -1586,22 +1663,91 @@ async function loadUserData(user){
     const snap=await db.collection("users").doc(user.uid).get();
     if(snap.exists){
       currentUserData=snap.data();
+
+      // ─── ENGELLİ KONTROL ───────────────────────────────────
+      if(currentUserData.status==="banned"){
+        // Engelli kullanıcıyı hemen çıkar ve bildir
+        await auth.signOut();
+        showBanNotice(currentUserData.adminNote||"");
+        return;
+      }
+
+      // ─── UYARI KONTROL ─────────────────────────────────────
+      if(currentUserData.lastWarning && currentUserData.warningCount>0){
+        const lastWarnSeen=localStorage.getItem("ys_warn_seen_"+user.uid);
+        const lastWarnTs=currentUserData.lastWarning?.toMillis?.()?.toString()||"";
+        if(lastWarnTs && lastWarnTs!==lastWarnSeen){
+          // Görülmemiş yeni uyarı var
+          const lastWarn=(currentUserData.warnings||[]).slice(-1)[0];
+          if(lastWarn){
+            setTimeout(()=>showWarningNotice(lastWarn,user.uid,lastWarnTs),800);
+          }
+        }
+      }
+
     }else{
-      // İlk kez
+      // İlk kez giriş — kayıt oluştur
       const data={
-        uid:user.uid,email:user.email,name:user.displayName||"",
-        photoURL:user.photoURL||"",school:"",branch:"",
-        role:"member",joinedAt:firebase.firestore.FieldValue.serverTimestamp(),
-        reputation:0,questionCount:0,answerCount:0
+        uid:user.uid, email:user.email, name:user.displayName||"",
+        photoURL:user.photoURL||"", school:"", branch:"",
+        role:"member", status:"active",
+        joinedAt:firebase.firestore.FieldValue.serverTimestamp(),
+        reputation:0, questionCount:0, answerCount:0,
+        warningCount:0, warnings:[]
       };
       await db.collection("users").doc(user.uid).set(data);
       currentUserData=data;
     }
+
+    // Admin butonu
     if(ADMIN_EMAILS.includes(user.email)||(currentUserData&&currentUserData.role==="admin")){
       document.getElementById("adminNavBtn").style.display="block";
     }
     if(document.getElementById("page-profile").classList.contains("active")){renderProfile();}
   }catch(e){console.error("User data error:",e);}
+}
+
+/* Engel bildirimi — tam ekran */
+function showBanNotice(note){
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;";
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:14px;padding:36px;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);">
+      <div style="font-size:3rem;margin-bottom:12px;">🚫</div>
+      <h2 style="font-size:1.2rem;font-weight:800;color:#c0392b;margin-bottom:10px;">Hesabınız Engellendi</h2>
+      <p style="font-size:.88rem;color:#555;line-height:1.6;margin-bottom:${note?"14px":"0"}">Bu hesap platform yöneticisi tarafından erişime kapatılmıştır.</p>
+      ${note?`<div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;font-size:.82rem;color:#c0392b;margin-bottom:14px;">${esc(note)}</div>`:""}
+      <p style="font-size:.78rem;color:#999;">Hata olduğunu düşünüyorsanız yönetici ile iletişime geçin.</p>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+/* Uyarı bildirimi — popup */
+function showWarningNotice(warn, uid, warnTs){
+  const overlay=document.createElement("div");
+  overlay.id="warnNoticeOverlay";
+  overlay.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;";
+  overlay.innerHTML=`
+    <div style="background:#fff;border-radius:14px;padding:32px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);border-top:4px solid #f59e0b;">
+      <div style="font-size:2.5rem;margin-bottom:10px;text-align:center;">⚠️</div>
+      <h2 style="font-size:1.1rem;font-weight:800;color:#854d0e;margin-bottom:8px;text-align:center;">Yönetici Uyarısı</h2>
+      <div style="background:#fff8e1;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:.78rem;font-weight:700;color:#854d0e;margin-bottom:4px;">Neden: ${esc(warn.reason||"")}</div>
+        <div style="font-size:.86rem;color:#555;line-height:1.6;">${esc(warn.message||"")}</div>
+        <div style="font-size:.73rem;color:#aaa;margin-top:6px;">${warn.date||""}</div>
+      </div>
+      <p style="font-size:.8rem;color:#777;text-align:center;margin-bottom:16px;">Lütfen platform kurallarına uygun davranmaya devam edin. Tekrarlanan ihlaller hesap engellemesine yol açabilir.</p>
+      <button onclick="acknowledgeWarning('${uid}','${warnTs}')" style="width:100%;background:#f59e0b;color:#fff;border:none;padding:11px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:var(--font);">
+        Anladım, Devam Et
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function acknowledgeWarning(uid, warnTs){
+  localStorage.setItem("ys_warn_seen_"+uid, warnTs);
+  const overlay=document.getElementById("warnNoticeOverlay");
+  if(overlay)overlay.remove();
 }
 
 async function doLogin(){
@@ -2192,30 +2338,277 @@ function previewLogoUrl(url){
 }
 
 /* --- ADMİN: KULLANICILAR --- */
+let allAdminUsers = []; // tüm üyeler cache
+
 async function loadAdminUsers(){
   if(!db)return;
-  const snap=await db.collection("users").orderBy("joinedAt","desc").get();
+  const tbody=document.getElementById("adminUsersTbody");
+  if(tbody)tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:20px;"><div class="spinner"></div></td></tr>`;
+
+  try{
+    const snap=await db.collection("users").orderBy("joinedAt","desc").get();
+    allAdminUsers=[];
+    snap.forEach(d=>allAdminUsers.push({uid:d.id,...d.data()}));
+    renderUserStatsRow();
+    filterAdminUsers();
+  }catch(e){
+    if(tbody)tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--danger);padding:20px;">Hata: ${e.message}</td></tr>`;
+  }
+}
+
+function renderUserStatsRow(){
+  const el=document.getElementById("userStatsRow");
+  if(!el)return;
+  const total=allAdminUsers.length;
+  const admins=allAdminUsers.filter(u=>u.role==="admin").length;
+  const banned=allAdminUsers.filter(u=>u.status==="banned").length;
+  const warned=allAdminUsers.filter(u=>u.warningCount>0).length;
+  el.innerHTML=`
+    <div style="background:var(--navy-light);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 18px;text-align:center;min-width:80px;">
+      <div style="font-size:1.4rem;font-weight:900;color:var(--navy);">${total}</div>
+      <div style="font-size:.72rem;color:var(--muted);">Toplam Üye</div>
+    </div>
+    <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:var(--r-sm);padding:10px 18px;text-align:center;min-width:80px;">
+      <div style="font-size:1.4rem;font-weight:900;color:#2e7d32;">${admins}</div>
+      <div style="font-size:.72rem;color:var(--muted);">Yönetici</div>
+    </div>
+    <div style="background:#fff3e0;border:1px solid #ffcc80;border-radius:var(--r-sm);padding:10px 18px;text-align:center;min-width:80px;">
+      <div style="font-size:1.4rem;font-weight:900;color:#e65100;">${warned}</div>
+      <div style="font-size:.72rem;color:var(--muted);">Uyarılı</div>
+    </div>
+    <div style="background:#ffebee;border:1px solid #ef9a9a;border-radius:var(--r-sm);padding:10px 18px;text-align:center;min-width:80px;">
+      <div style="font-size:1.4rem;font-weight:900;color:var(--danger);">${banned}</div>
+      <div style="font-size:.72rem;color:var(--muted);">Engelli</div>
+    </div>`;
+}
+
+function filterAdminUsers(){
+  const q=(document.getElementById("userSearchInput")?.value||"").toLowerCase().trim();
+  const roleF=document.getElementById("userRoleFilter")?.value||"";
+  let list=[...allAdminUsers];
+  if(q)list=list.filter(u=>(u.name||"").toLowerCase().includes(q)||(u.email||"").toLowerCase().includes(q)||(u.school||"").toLowerCase().includes(q));
+  if(roleF==="banned")list=list.filter(u=>u.status==="banned");
+  else if(roleF)list=list.filter(u=>u.role===roleF&&u.status!=="banned");
+  renderUsersTable(list);
+}
+
+function renderUsersTable(list){
   const tbody=document.getElementById("adminUsersTbody");
   if(!tbody)return;
-  const rows=[];
-  snap.forEach(d=>{
-    const u=d.data();
-    rows.push(`<tr>
-      <td style="font-weight:600;">${esc(u.name||"—")}</td>
+  if(!list.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Kayıt bulunamadı.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=list.map(u=>{
+    const isBanned=u.status==="banned";
+    const isAdmin=u.role==="admin";
+    const warnCount=u.warningCount||0;
+    const statusBadge=isBanned
+      ?`<span class="status-badge st-inactive">🚫 Engelli</span>`
+      :isAdmin
+        ?`<span class="status-badge st-active">👑 Yönetici</span>`
+        :warnCount>0
+          ?`<span class="status-badge" style="background:#fff3e0;color:#e65100;">⚠️ Uyarılı (${warnCount})</span>`
+          :`<span class="status-badge st-pending">👤 Üye</span>`;
+    return`<tr style="${isBanned?"opacity:.6;background:#fff5f5":""}">
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;">
+            ${u.photoURL?`<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;">`:(u.name||"?")[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:.86rem;">${esc(u.name||"—")}</div>
+            ${u.adminNote?`<div style="font-size:.7rem;color:var(--danger);margin-top:1px;">📌 ${esc(u.adminNote.substring(0,40))}…</div>`:""}
+          </div>
+        </div>
+      </td>
       <td style="font-size:.8rem;">${esc(u.email||"")}</td>
-      <td style="font-size:.8rem;">${esc(u.school||"—")}</td>
-      <td style="font-size:.78rem;">${u.joinedAt?.toDate?.().toLocaleDateString("tr-TR")||"—"}</td>
-      <td><span class="status-badge ${u.role==="admin"?"st-active":"st-pending"}">${u.role||"member"}</span></td>
-      <td><button class="btn btn-ghost" style="padding:4px 9px;font-size:.73rem;" onclick="toggleAdminRole('${d.id}','${u.role}')">${u.role==="admin"?"Üye Yap":"Admin Yap"}</button></td>
-    </tr>`);
-  });
-  tbody.innerHTML=rows.join("")||"<tr><td colspan='6' style='text-align:center;color:var(--muted);padding:20px;'>Üye yok.</td></tr>";
+      <td style="font-size:.78rem;color:var(--muted);">${esc(u.school||"—")}${u.branch?`<br><span style="color:var(--navy-mid);">${esc(u.branch)}</span>`:""}</td>
+      <td style="font-size:.75rem;color:var(--muted);">${u.joinedAt?.toDate?.().toLocaleDateString("tr-TR")||"—"}</td>
+      <td>${statusBadge}</td>
+      <td style="font-size:.78rem;text-align:center;">
+        <span title="Soru">${u.questionCount||0} ❓</span>
+        <span style="margin-left:6px;" title="Yanıt">${u.answerCount||0} 💬</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:.72rem;" title="Detay & Not" onclick="openUserDetail('${u.uid}')">📋</button>
+          <button class="btn btn-ghost" style="padding:3px 8px;font-size:.72rem;" title="Uyarı Gönder" onclick="openWarnModal('${u.uid}','${esc(u.name||"")}')">⚠️</button>
+          <button class="btn ${isAdmin?"btn-ghost":"btn-ghost"}" style="padding:3px 8px;font-size:.72rem;" title="${isAdmin?"Yöneticilikten Al":"Yönetici Yap"}" onclick="toggleAdminRole('${u.uid}','${u.role||"member"}')">
+            ${isAdmin?"👤":"👑"}
+          </button>
+          <button class="btn ${isBanned?"btn-success":"btn-danger"}" style="padding:3px 8px;font-size:.72rem;" title="${isBanned?"Engeli Kaldır":"Engelle"}" onclick="toggleBanUser('${u.uid}','${isBanned?"banned":"active"}')">
+            ${isBanned?"✅":"🚫"}
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
 }
-async function toggleAdminRole(uid,currentRole){
+
+/* Üye detay modalı */
+async function openUserDetail(uid){
+  const u=allAdminUsers.find(x=>x.uid===uid);
+  if(!u)return;
+  openModal("userDetailModal");
+  document.getElementById("userDetailTitle").textContent=`👤 ${u.name||"Üye"}`;
+  // Kullanıcının son sorularını çek
+  let recentQs=[];
+  if(db){
+    try{
+      const qSnap=await db.collection("questions").where("authorId","==",uid).orderBy("createdAt","desc").limit(5).get();
+      qSnap.forEach(d=>recentQs.push({id:d.id,...d.data()}));
+    }catch(e){}
+  }
+  const warnHistory=u.warnings||[];
+  document.getElementById("userDetailBody").innerHTML=`
+    <!-- Profil bilgileri -->
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--r-sm);">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;">
+        ${u.photoURL?`<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;">`:(u.name||"?")[0].toUpperCase()}
+      </div>
+      <div>
+        <div style="font-weight:800;font-size:.95rem;color:var(--navy);">${esc(u.name||"—")}</div>
+        <div style="font-size:.8rem;color:var(--muted);">${esc(u.email||"")}</div>
+        <div style="font-size:.78rem;color:var(--muted);">${esc(u.school||"")} ${u.branch?`· ${esc(u.branch)}`:""}</div>
+        <div style="font-size:.75rem;margin-top:3px;">
+          <span style="background:var(--navy-light);padding:1px 7px;border-radius:10px;color:var(--navy);font-weight:600;">${u.role==="admin"?"👑 Yönetici":"👤 Üye"}</span>
+          ${u.status==="banned"?`<span style="background:#ffebee;padding:1px 7px;border-radius:10px;color:var(--danger);font-weight:600;margin-left:4px;">🚫 Engelli</span>`:""}
+          ${u.warningCount>0?`<span style="background:#fff3e0;padding:1px 7px;border-radius:10px;color:#e65100;font-weight:600;margin-left:4px;">⚠️ ${u.warningCount} uyarı</span>`:""}
+        </div>
+      </div>
+    </div>
+
+    <!-- İstatistikler -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--navy);">${u.questionCount||0}</div>
+        <div style="font-size:.72rem;color:var(--muted);">Soru</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--navy);">${u.answerCount||0}</div>
+        <div style="font-size:.72rem;color:var(--muted);">Yanıt</div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;text-align:center;">
+        <div style="font-size:1.3rem;font-weight:900;color:var(--navy);">${u.reputation||0}</div>
+        <div style="font-size:.72rem;color:var(--muted);">Puan</div>
+      </div>
+    </div>
+
+    <!-- Admin Notu -->
+    <div style="margin-bottom:16px;">
+      <label class="form-label">📌 Yönetici Notu (sadece adminler görür)</label>
+      <textarea class="form-textarea" id="adminNoteInput_${uid}" style="min-height:70px;" placeholder="Bu üye hakkında not ekleyin…">${esc(u.adminNote||"")}</textarea>
+      <button class="btn btn-teal" style="margin-top:8px;padding:6px 14px;font-size:.8rem;" onclick="saveAdminNote('${uid}')">💾 Notu Kaydet</button>
+      <div class="alert" id="noteAlert_${uid}" style="display:none;margin-top:8px;"></div>
+    </div>
+
+    <!-- Uyarı Geçmişi -->
+    ${warnHistory.length?`
+    <div style="margin-bottom:16px;">
+      <div style="font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">⚠️ Uyarı Geçmişi</div>
+      ${warnHistory.map(w=>`
+        <div style="background:#fff8e1;border:1px solid #f59e0b;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:6px;font-size:.8rem;">
+          <div style="font-weight:700;color:#854d0e;">${esc(w.reason||"")}</div>
+          <div style="color:var(--text);margin-top:2px;">${esc(w.message||"")}</div>
+          <div style="color:var(--muted);font-size:.72rem;margin-top:3px;">${w.date||""}</div>
+        </div>`).join("")}
+    </div>`:""}
+
+    <!-- Son Sorular -->
+    ${recentQs.length?`
+    <div>
+      <div style="font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">❓ Son Sorular</div>
+      ${recentQs.map(q=>`
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:6px;font-size:.82rem;">
+          <div style="font-weight:600;color:var(--navy);">${esc(q.title)}</div>
+          <div style="color:var(--muted);font-size:.73rem;">${q.answerCount||0} yanıt · ${q.createdAt?.toDate?.().toLocaleDateString("tr-TR")||""}</div>
+        </div>`).join("")}
+    </div>`:""}
+
+    <!-- Alt Butonlar -->
+    <div style="display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--border);flex-wrap:wrap;">
+      <button class="btn btn-ghost" style="font-size:.8rem;" onclick="closeModal('userDetailModal');openWarnModal('${uid}','${esc(u.name||"")}')">⚠️ Uyarı Gönder</button>
+      <button class="btn ${u.status==="banned"?"btn-success":"btn-danger"}" style="font-size:.8rem;" onclick="toggleBanUser('${uid}','${u.status==="banned"?"banned":"active"}');closeModal('userDetailModal')">
+        ${u.status==="banned"?"✅ Engeli Kaldır":"🚫 Kullanıcıyı Engelle"}
+      </button>
+      <button class="btn btn-ghost" style="font-size:.8rem;" onclick="closeModal('userDetailModal')">Kapat</button>
+    </div>`;
+}
+
+/* Admin notu kaydet */
+async function saveAdminNote(uid){
+  const note=document.getElementById("adminNoteInput_"+uid)?.value||"";
+  if(!db)return;
+  try{
+    await db.collection("users").doc(uid).update({adminNote:note});
+    const u=allAdminUsers.find(x=>x.uid===uid);
+    if(u)u.adminNote=note;
+    showAlert("noteAlert_"+uid,"success","✅ Not kaydedildi!");
+  }catch(e){showAlert("noteAlert_"+uid,"error","Hata: "+e.message);}
+}
+
+/* Uyarı modalı */
+function openWarnModal(uid,name){
+  document.getElementById("warnUserId").value=uid;
+  document.getElementById("warnUserModal").querySelector(".modal-title").textContent=`⚠️ Uyarı: ${name}`;
+  document.getElementById("warnMessage").value="";
+  openModal("warnUserModal");
+}
+
+/* Uyarı gönder */
+async function sendWarning(){
+  const uid=document.getElementById("warnUserId").value;
+  const reason=document.getElementById("warnReason").value;
+  const message=document.getElementById("warnMessage").value.trim();
+  if(!message){showAlert("warnAlert","error","Uyarı mesajı zorunludur.");return;}
+  if(!db){showAlert("warnAlert","error","Firebase bağlı değil.");return;}
+  const warnData={reason,message,date:new Date().toLocaleDateString("tr-TR"),by:currentUser?.email||"admin"};
+  try{
+    await db.collection("users").doc(uid).update({
+      warningCount:firebase.firestore.FieldValue.increment(1),
+      warnings:firebase.firestore.FieldValue.arrayUnion(warnData),
+      lastWarning:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    const u=allAdminUsers.find(x=>x.uid===uid);
+    if(u){u.warningCount=(u.warningCount||0)+1;u.warnings=[...(u.warnings||[]),warnData];}
+    showAlert("warnAlert","success","✅ Uyarı gönderildi!");
+    setTimeout(()=>{closeModal("warnUserModal");renderUsersTable(allAdminUsers);},1500);
+  }catch(e){showAlert("warnAlert","error","Hata: "+e.message);}
+}
+
+/* Engelle / Engeli Kaldır */
+async function toggleBanUser(uid, currentStatus){
+  const isBanned = currentStatus === "banned";
+  const action = isBanned ? "engeli kaldır" : "engelle";
+  if(!confirm(`Bu kullanıcıyı ${action}mak istediğinizden emin misiniz?`))return;
+  if(!db)return;
+  const newStatus = isBanned ? "active" : "banned";
+  try{
+    await db.collection("users").doc(uid).update({status:newStatus});
+    const u=allAdminUsers.find(x=>x.uid===uid);
+    if(u)u.status=newStatus;
+    renderUserStatsRow();
+    filterAdminUsers();
+    // Eğer detay modali açıksa kapat
+    const modal=document.getElementById("userDetailModal");
+    if(modal&&modal.classList.contains("open"))closeModal("userDetailModal");
+  }catch(e){alert("Hata: "+e.message);}
+}
+
+/* Rol değiştir */
+async function toggleAdminRole(uid, currentRole){
   const newRole=currentRole==="admin"?"member":"admin";
-  if(!confirm(`Rol "${newRole}" olarak değiştirilsin mi?`))return;
-  await db.collection("users").doc(uid).update({role:newRole});
-  loadAdminUsers();
+  const label=newRole==="admin"?"Yönetici Yap":"Yöneticiliği Kaldır";
+  if(!confirm(`${label} - Emin misiniz?`))return;
+  if(!db)return;
+  try{
+    await db.collection("users").doc(uid).update({role:newRole});
+    const u=allAdminUsers.find(x=>x.uid===uid);
+    if(u)u.role=newRole;
+    renderUserStatsRow();
+    filterAdminUsers();
+  }catch(e){alert("Hata: "+e.message);}
 }
 
 /* --- ADMİN Q&A --- */

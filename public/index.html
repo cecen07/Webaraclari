@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yenilikçi Sınıf | Dijital Araçlar Platformu</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK — sadece Auth için (config backend'den alınır) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<!-- NOT: Firebase API key bu dosyada YOK. /api/config/client endpoint'inden alınır. -->
+
+<style>
+:root{
+  --navy:#002f87;--navy-mid:#3c5895;--navy-light:#e8eef8;
+  --teal:#1bcfc9;--teal-dark:#00cac3;--teal-light:#d1faf8;
+  --gray-dark:#555559;--gray-light:#dad8d6;
+  --bg:#f0f4fb;--surface:#ffffff;--surface2:#e8eef8;
+  --border:#d0daf0;--text:#1a2340;--muted:#6b7893;
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --sh-sm:0 2px 10px rgba(0,47,135,.08);
+  --sh-md:0 6px 28px rgba(0,47,135,.13);
+  --sh-lg:0 16px 48px rgba(0,47,135,.18);
+  --r:14px;--r-sm:9px;--r-xs:6px;
+  --font:'Barlow','Segoe UI',Arial,sans-serif;--nav-h:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding-top:var(--nav-h);}
+
+/* ── NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:500;background:var(--navy);box-shadow:0 2px 20px rgba(0,0,0,.3);display:flex;align-items:center;padding:0 24px;gap:16px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;}
+.nav-logo-text{color:#fff;font-size:.9rem;line-height:1.3;}
+.nav-logo-text strong{display:block;font-size:1rem;font-weight:800;color:var(--teal);}
+.nav-sep{width:1px;height:30px;background:rgba(255,255,255,.15);flex-shrink:0;}
+.nav-links{display:flex;gap:4px;flex:1;overflow-x:auto;}
+.nav-link{color:rgba(255,255,255,.8);padding:7px 14px;border-radius:var(--r-sm);text-decoration:none;font-size:.83rem;font-weight:600;white-space:nowrap;transition:all .2s;cursor:pointer;border:none;background:none;font-family:var(--font);}
+.nav-link:hover,.nav-link.active{background:rgba(27,207,201,.18);color:var(--teal);}
+.nav-actions{display:flex;gap:8px;align-items:center;margin-left:auto;flex-shrink:0;}
+.nav-btn{padding:7px 16px;border-radius:var(--r-sm);font-size:.82rem;font-weight:700;cursor:pointer;border:none;font-family:var(--font);transition:all .2s;}
+.nav-btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:#fff;}
+.nav-btn-outline:hover{background:rgba(255,255,255,.1);}
+.nav-btn-teal{background:var(--teal);color:#fff;}
+.nav-btn-teal:hover{background:var(--teal-dark);}
+.nav-user{display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 12px 5px 5px;border-radius:30px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);transition:all .2s;}
+.nav-user:hover{background:rgba(255,255,255,.18);}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;overflow:hidden;}
+.nav-avatar img{width:100%;height:100%;object-fit:cover;}
+.nav-user-name{color:#fff;font-size:.82rem;font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ── SAYFALAR ── */
+.page-section{display:none;}
+.page-section.active{display:block;}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 55%,#1a4a9e 100%);color:#fff;padding:0 20px 70px;text-align:center;position:relative;overflow:hidden;}
+.hero-inner{max-width:900px;margin:0 auto;padding-top:56px;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(27,207,201,.18);border:1px solid rgba(27,207,201,.35);padding:7px 20px;border-radius:30px;font-size:.82rem;letter-spacing:.05em;margin-bottom:20px;font-weight:600;}
+.hero h1{font-size:clamp(1.5rem,3.8vw,2.5rem);font-weight:900;letter-spacing:-.02em;margin-bottom:10px;}
+.hero-sub{font-size:1rem;opacity:.85;max-width:560px;margin:0 auto 28px;font-weight:300;}
+.hero-stats{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.hero-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(8px);padding:12px 20px;border-radius:var(--r);text-align:center;min-width:90px;border-top:2px solid var(--teal);}
+.hero-stat .n{font-size:1.7rem;font-weight:900;line-height:1;display:block;color:var(--teal);}
+.hero-stat .l{font-size:.75rem;opacity:.8;display:block;margin-top:2px;font-weight:500;}
+.announcement-bar{background:rgba(27,207,201,.15);border:1px solid rgba(27,207,201,.3);border-radius:var(--r-sm);padding:10px 18px;margin:0 auto;max-width:800px;font-size:.85rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.ann-badge{background:var(--teal);color:#fff;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+
+/* ── FEATURED (gizlenebilir) ── */
+.featured-wrap{max-width:1280px;margin:-26px auto 0;padding:0 20px;position:relative;z-index:10;}
+.featured-wrap.hidden .featured-chips{display:none;}
+.featured-toggle{font-size:.75rem;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;margin-bottom:6px;user-select:none;}
+.featured-label{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--navy-mid);margin-bottom:10px;}
+.featured-chips{display:flex;gap:9px;flex-wrap:wrap;}
+.chip{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1.5px solid var(--border);padding:8px 15px;border-radius:40px;font-size:.84rem;font-weight:700;color:var(--navy);box-shadow:var(--sh-sm);cursor:pointer;transition:all .22s;text-decoration:none;border-left:3px solid var(--teal);}
+.chip:hover{background:var(--navy);color:#fff;}
+.chip.meb{border-left-color:#c0392b;}
+.chip img.tool-logo{width:18px;height:18px;border-radius:3px;object-fit:contain;}
+
+/* ── TOOLBAR ── */
+.toolbar-wrap{max-width:1280px;margin:28px auto 0;padding:0 20px;}
+.toolbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sh-sm);display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:3px solid var(--teal);}
+.search-box{flex:1;min-width:200px;position:relative;}
+.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.search-box input{width:100%;padding:9px 12px 9px 40px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.92rem;font-family:var(--font);background:var(--bg);color:var(--text);outline:none;transition:all .2s;}
+.search-box input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,207,201,.13);background:#fff;}
+select.filter-sel{padding:9px 32px 9px 11px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.88rem;font-family:var(--font);background:var(--bg);color:var(--text);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7893' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;min-width:195px;}
+.btn{padding:9px 18px;border-radius:var(--r-sm);font-size:.86rem;font-weight:700;cursor:pointer;border:none;transition:all .2s;font-family:var(--font);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+.btn-navy{background:var(--navy);color:#fff;} .btn-navy:hover{background:var(--navy-mid);}
+.btn-teal{background:var(--teal);color:#fff;} .btn-teal:hover{background:var(--teal-dark);}
+.btn-outline{background:transparent;color:var(--navy);border:1.5px solid var(--navy);} .btn-outline:hover{background:var(--navy);color:#fff;}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);} .btn-ghost:hover{border-color:var(--navy);color:var(--navy);}
+.btn-danger{background:var(--danger);color:#fff;} .btn-danger:hover{background:#dc2626;}
+.btn-success{background:var(--success);color:#fff;}
+.toggle-wrap{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.toggle-wrap input[type=checkbox]{width:34px;height:19px;appearance:none;background:var(--border);border-radius:20px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle-wrap input[type=checkbox]::before{content:'';position:absolute;width:15px;height:15px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.toggle-wrap input[type=checkbox]:checked{background:var(--teal);}
+.toggle-wrap input[type=checkbox]:checked::before{transform:translateX(15px);}
+.results-bar{max-width:1280px;margin:14px auto 0;padding:0 20px;font-size:.84rem;color:var(--muted);display:flex;align-items:center;gap:9px;}
+.count-badge{background:var(--navy);color:#fff;padding:2px 9px;border-radius:20px;font-weight:700;font-size:.78rem;}
+
+/* ── KARTLAR ── */
+.main-grid{max-width:1280px;margin:22px auto 50px;padding:0 20px;}
+.cat-section{margin-bottom:32px;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-sm);background:var(--surface);border:1px solid var(--border);}
+.cat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;cursor:pointer;background:var(--surface);transition:background .18s;user-select:none;border-bottom:1px solid var(--border);gap:10px;}
+.cat-head:hover{background:var(--surface2);}
+.cat-head-left{display:flex;align-items:center;gap:12px;}
+.cat-ico{width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;background:var(--surface2);}
+.cat-name{font-size:.94rem;font-weight:700;color:var(--text);}
+.cat-cnt{background:var(--navy);color:#fff;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;margin-left:6px;}
+.cat-toggle{font-size:.8rem;color:var(--muted);transition:transform .25s;}
+.cat-section.collapsed .cat-toggle{transform:rotate(-90deg);}
+.cat-body{padding:18px;}
+.cat-section.collapsed .cat-body{display:none;}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:13px;}
+.tool-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:15px;display:flex;flex-direction:column;gap:8px;transition:transform .22s,box-shadow .22s,border-color .22s;position:relative;}
+.tool-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);border-color:rgba(27,207,201,.4);background:#fff;}
+.tool-card-top{display:flex;align-items:flex-start;gap:10px;}
+.tool-logo-wrap{width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid var(--border);}
+.tool-logo-wrap img{width:32px;height:32px;object-fit:contain;}
+.tool-info{flex:1;min-width:0;}
+.tool-name{font-size:.92rem;font-weight:700;color:var(--text);line-height:1.3;}
+.tool-desc{font-size:.82rem;color:var(--muted);line-height:1.55;flex:1;}
+.tool-note{font-size:.75rem;color:var(--navy);font-style:italic;background:rgba(27,207,201,.09);padding:3px 9px;border-radius:5px;border-left:3px solid var(--teal);}
+.tool-footer{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+.cat-tag{font-size:.69rem;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:20px;border:1px solid var(--border);}
+.btn-open{font-size:.78rem;font-weight:700;padding:6px 14px;border-radius:var(--r-sm);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:all .2s;border:none;}
+.btn-open-active{background:var(--navy);color:#fff;} .btn-open-active:hover{background:var(--teal);}
+.btn-open-na{background:var(--border);color:var(--muted);cursor:not-allowed;}
+
+/* ── SINIFL ── */
+.classes-layout{max-width:1280px;margin:28px auto 60px;padding:0 20px;}
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;cursor:pointer;transition:all .2s;}
+.class-card:hover{box-shadow:var(--sh-md);border-color:rgba(27,207,201,.4);}
+.class-card-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.class-ico{font-size:1.5rem;}
+.class-name{font-size:1rem;font-weight:800;color:var(--navy);}
+.class-meta{font-size:.82rem;color:var(--muted);}
+.class-code-badge{background:var(--navy);color:var(--teal);font-size:.8rem;font-weight:800;padding:4px 12px;border-radius:20px;font-family:monospace;letter-spacing:.1em;margin-left:auto;}
+.class-desc{font-size:.84rem;color:var(--muted);margin-top:10px;}
+.class-detail-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
+.class-detail-head h2{font-size:1.1rem;font-weight:800;color:var(--navy);flex:1;}
+.students-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
+.student-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;display:flex;align-items:center;gap:12px;}
+.student-avatar{width:40px;height:40px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;color:#fff;flex-shrink:0;}
+.student-info{flex:1;min-width:0;}
+.student-name{font-size:.9rem;font-weight:700;color:var(--text);}
+.student-no,.student-email{font-size:.75rem;color:var(--muted);}
+.student-actions{display:flex;gap:4px;}
+
+/* ── MEDYA ── */
+.media-layout{max-width:1280px;margin:28px auto 60px;padding:0 20px;}
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.media-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:all .2s;}
+.media-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);}
+.media-info{padding:12px;}
+.media-name{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+.media-meta{font-size:.75rem;color:var(--muted);}
+.media-tags{margin-top:6px;}
+.media-actions{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
+
+/* ── TOPLULUK ── */
+.qa-layout{display:grid;grid-template-columns:1fr 280px;gap:24px;max-width:1280px;margin:28px auto;padding:0 20px;}
+.qa-page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.qa-page-head h2{font-size:1.2rem;font-weight:800;color:var(--navy);}
+.qa-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.qa-filter-btn{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;font-family:var(--font);}
+.qa-filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;cursor:pointer;transition:all .2s;display:flex;gap:16px;}
+.question-card:hover{box-shadow:var(--sh-md);border-color:rgba(27,207,201,.4);transform:translateY(-2px);}
+.q-stats{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;min-width:52px;}
+.q-stat{text-align:center;}
+.q-stat .n{font-size:1.1rem;font-weight:800;color:var(--navy);display:block;}
+.q-stat .l{font-size:.65rem;color:var(--muted);}
+.q-stat.answered .n{color:var(--success);}
+.q-divider{width:1px;background:var(--border);}
+.q-body{flex:1;min-width:0;}
+.q-title{font-size:.96rem;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.q-excerpt{font-size:.83rem;color:var(--muted);line-height:1.55;margin-bottom:10px;}
+.q-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.q-tag{background:var(--navy-light);color:var(--navy);padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.q-meta{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.q-author{display:flex;align-items:center;gap:5px;}
+.q-author-avatar{width:20px;height:20px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;}
+.qa-sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.qa-sidebar-title{font-size:.82rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--teal);}
+
+/* ── PROFİL ── */
+.profile-card{background:linear-gradient(135deg,var(--navy),var(--navy-mid));border-radius:var(--r);padding:28px;color:#fff;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.profile-avatar-big{width:72px;height:72px;border-radius:50%;border:3px solid var(--teal);overflow:hidden;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;color:#fff;flex-shrink:0;}
+.profile-avatar-big img{width:100%;height:100%;object-fit:cover;}
+.profile-info h2{font-size:1.2rem;font-weight:800;margin-bottom:6px;}
+.profile-info p{font-size:.85rem;opacity:.85;margin-top:2px;}
+.profile-badge{background:rgba(27,207,201,.2);border:1px solid rgba(27,207,201,.4);padding:3px 12px;border-radius:20px;font-size:.75rem;font-weight:700;color:var(--teal);display:inline-block;margin-top:8px;}
+.profile-edit-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;border-top:3px solid var(--teal);}
+
+/* ── ADMİN ── */
+.admin-layout{max-width:1280px;margin:28px auto;padding:0 20px;display:grid;grid-template-columns:220px 1fr;gap:24px;}
+.admin-nav{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;height:fit-content;position:sticky;top:80px;}
+.admin-nav-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.admin-nav-link{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;margin-bottom:3px;border:none;background:none;width:100%;text-align:left;font-family:var(--font);}
+.admin-nav-link:hover,.admin-nav-link.active{background:var(--navy-light);color:var(--navy);}
+.admin-content{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;}
+.admin-panel{display:none;} .admin-panel.active{display:block;}
+.admin-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.admin-panel-head h2{font-size:1.1rem;font-weight:800;color:var(--navy);}
+.admin-stats-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+.astat{flex:1;min-width:100px;background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;border-radius:var(--r-sm);padding:16px;text-align:center;}
+.astat .n{font-size:1.7rem;font-weight:900;display:block;color:var(--teal);}
+.astat .l{font-size:.72rem;opacity:.8;}
+.data-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+.data-table th{background:var(--surface2);padding:9px 12px;text-align:left;font-weight:700;color:var(--navy);border-bottom:2px solid var(--border);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;}
+.data-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--surface2);}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-sm);}
+.status-badge{padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.st-active{background:#d1fdf4;color:#0e7a76;} .st-pending{background:#fff3cd;color:#854d0e;} .st-inactive{background:#fee2e2;color:#c0392b;}
+
+/* ── FORM ── */
+.form-group{margin-bottom:16px;}
+.form-label{font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.02em;display:block;margin-bottom:6px;}
+.form-input,.form-textarea,.form-select{width:100%;padding:9px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.9rem;font-family:var(--font);background:var(--bg);color:var(--text);outline:none;transition:all .2s;}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,207,201,.12);background:#fff;}
+.form-textarea{resize:vertical;min-height:85px;}
+.form-select{appearance:none;cursor:pointer;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-full{grid-column:1/-1;}
+.form-hint{font-size:.75rem;color:var(--muted);margin-top:4px;}
+.alert{padding:10px 14px;border-radius:var(--r-sm);font-size:.85rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.alert-success{background:#d1fdf4;border:1px solid var(--teal);color:#0e7a76;}
+.alert-error{background:#fee2e2;border:1px solid var(--danger);color:#c0392b;}
+.alert-info{background:#dbeafe;border:1px solid #93c5fd;color:var(--navy);}
+.alert-warn{background:#fff3cd;border:1px solid #f59e0b;color:#854d0e;}
+
+/* ── MODAL ── */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;}
+.modal.open{display:flex;}
+.modal-box{background:#fff;border-radius:var(--r);box-shadow:var(--sh-lg);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-top:4px solid var(--navy);animation:mIn .28s ease;}
+.modal-box.wide{max-width:820px;}
+@keyframes mIn{from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);}}
+.modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;}
+.modal-title{font-size:1rem;font-weight:800;color:var(--navy);}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.35rem;color:var(--muted);line-height:1;transition:color .2s;padding:2px 6px;}
+.modal-close:hover{color:var(--navy);}
+.modal-body{padding:22px;}
+
+/* ── AUTH MODAL ── */
+.auth-tabs{display:flex;gap:2px;background:var(--surface2);padding:4px;border-radius:var(--r-sm);margin-bottom:22px;}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:7px;cursor:pointer;font-size:.88rem;font-weight:700;color:var(--muted);transition:all .2s;border:none;background:none;font-family:var(--font);}
+.auth-tab.active{background:#fff;color:var(--navy);box-shadow:var(--sh-sm);}
+.auth-form{display:none;} .auth-form.active{display:block;}
+.auth-divider{text-align:center;font-size:.78rem;color:var(--muted);margin:14px 0;position:relative;}
+.auth-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border);}
+.auth-divider span{background:#fff;padding:0 10px;position:relative;}
+.social-btn{width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:#fff;cursor:pointer;font-size:.88rem;font-weight:600;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;}
+.social-btn:hover{border-color:var(--navy);background:var(--navy-light);}
+
+/* ── ARİZALAR ── */
+.ariz-layout{max-width:1280px;margin:28px auto 60px;padding:0 20px;display:grid;grid-template-columns:1fr 300px;gap:24px;}
+.ariz-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;border-left:4px solid var(--warning);}
+.ariz-card.durum-acik{border-left-color:var(--danger);}
+.ariz-card.durum-inceleniyor{border-left-color:var(--warning);}
+.ariz-card.durum-cozuldu{border-left-color:var(--success);}
+.ariz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.ariz-title{font-size:.95rem;font-weight:700;color:var(--navy);}
+.ariz-durum{font-size:.7rem;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;}
+.durum-acik-badge{background:#fee2e2;color:#c0392b;}
+.durum-inceleniyor-badge{background:#fff3cd;color:#854d0e;}
+.durum-cozuldu-badge{background:#d1fdf4;color:#0e7a76;}
+.ariz-desc{font-size:.85rem;color:var(--text);line-height:1.6;margin-bottom:8px;}
+.ariz-meta{font-size:.73rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.ariz-filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.ariz-filter-btn{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--muted);transition:all .2s;font-family:var(--font);}
+.ariz-filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.ariz-sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+.ariz-sidebar-title{font-size:.82rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--teal);}
+.inv-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:.83rem;}
+.inv-row:last-child{border-bottom:none;}
+.inv-label{display:flex;align-items:center;gap:7px;color:var(--text);font-weight:500;}
+.inv-num{font-weight:700;color:var(--navy);}
+.envanter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:22px;}
+.env-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;cursor:pointer;transition:all .22s;border-top:3px solid var(--border);}
+.env-card:hover,.env-card.selected{box-shadow:var(--sh-md);border-top-color:var(--teal);background:var(--teal-light);}
+.env-card.has-ariz{border-top-color:var(--warning);}
+.env-card.critical{border-top-color:var(--danger);}
+.env-ico{font-size:1.6rem;margin-bottom:5px;}
+.env-name{font-size:.78rem;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:3px;}
+.env-ariz-badge{background:var(--warning);color:#fff;font-size:.63rem;font-weight:700;padding:1px 7px;border-radius:10px;display:inline-block;}
+.env-ariz-badge.critical{background:var(--danger);}
+
+.sidebar-tag{display:inline-flex;align-items:center;gap:4px;background:var(--navy-light);color:var(--navy);padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .18s;}
+.sidebar-tag:hover{background:var(--navy);color:#fff;}
+.gb-stars{color:#f59e0b;font-size:.9rem;}
+
+/* ───── FOOTER / MISC ── */
+footer{background:var(--navy);color:rgba(255,255,255,.7);padding:34px 20px;text-align:center;font-size:.83rem;line-height:1.8;}
+footer strong{color:#fff;}
+.footer-teal{color:var(--teal);font-weight:700;}
+#btt{position:fixed;bottom:24px;right:24px;width:46px;height:46px;background:var(--navy);color:#fff;border:2px solid var(--teal);border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:var(--sh-md);transition:all .25s;z-index:200;}
+#btt.show{display:flex;}
+.spinner{display:inline-block;width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;}
+.spinner-lg{width:36px;height:36px;border-width:3px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay{display:flex;align-items:center;justify-content:center;padding:60px;gap:14px;color:var(--muted);}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty h3{font-size:1rem;color:var(--text);margin-bottom:6px;}
+.hidden{display:none!important;}
+.toast{background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;box-shadow:var(--sh-md);display:flex;align-items:center;gap:10px;font-size:.88rem;font-weight:600;animation:mIn .2s ease;}
+.toast-success{border-left:4px solid var(--success);}
+.toast-error{border-left:4px solid var(--danger);}
+.toast-warn{border-left:4px solid var(--warning);}
+.toast-info{border-left:4px solid var(--teal);}
+.gb-form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:26px;border-top:3px solid var(--teal);}
+.gb-section{max-width:1280px;margin:28px auto 60px;padding:0 20px;}
+.gb-entry{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh-sm);border-left:4px solid var(--teal);margin-bottom:14px;}
+.gb-author{font-weight:800;color:var(--navy);font-size:.95rem;}
+.gb-text{font-size:.88rem;color:var(--text);line-height:1.65;font-style:italic;}
+
+@media(max-width:900px){
+  .qa-layout{grid-template-columns:1fr;}
+  .admin-layout{grid-template-columns:1fr;}
+  .ariz-layout{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════════════ -->
+<nav class="topnav">
+  <a class="nav-logo" href="#home" onclick="App.showPage('home')">
+    <div class="nav-logo-text"><strong>YENİLİKÇİ SINIF</strong>Dijital Araçlar</div>
+  </a>
+  <div class="nav-sep"></div>
+  <div class="nav-links">
+    <button class="nav-link active" data-page="home"      onclick="App.showPage('home')">🏠 Ana Sayfa</button>
+    <button class="nav-link"       data-page="tools"     onclick="App.showPage('tools')">🛠️ Araçlar</button>
+    <button class="nav-link"       data-page="community" onclick="App.showPage('community')">💬 Topluluk</button>
+    <button class="nav-link"       data-page="classes"   onclick="App.showPage('classes')">🏫 Sınıflarım</button>
+    <button class="nav-link"       data-page="media"     onclick="App.showPage('media')">🎬 Stok Medya</button>
+    <button class="nav-link"       data-page="arizalar"  onclick="App.showPage('arizalar')">🔧 Arızalar</button>
+    <button class="nav-link"       data-page="announcements" onclick="App.showPage('announcements')">📢 Duyurular</button>
+    <button class="nav-link"       data-page="guestbook" onclick="App.showPage('guestbook')">📝 Ziyaretçi</button>
+  </div>
+  <div class="nav-actions">
+    <div id="navAuthGuest" style="display:flex;gap:8px;">
+      <button class="nav-btn nav-btn-outline" onclick="UI.showAuthModal('login')">Giriş</button>
+      <button class="nav-btn nav-btn-teal"    onclick="UI.showAuthModal('register')">Üye Ol</button>
+    </div>
+    <div id="navAuthUser" style="display:none">
+      <div class="nav-user" onclick="App.showPage('profile')">
+        <div class="nav-avatar" id="navAvatar">?</div>
+        <span class="nav-user-name" id="navUserName">Kullanıcı</span>
+      </div>
+    </div>
+    <button class="nav-btn nav-btn-outline" id="adminNavBtn" style="display:none" onclick="App.showPage('admin')">🛡️ Yönetici</button>
+  </div>
+</nav>
+
+<!-- ══ SAYFALAR ═════════════════════════════════════════════════════════════ -->
+
+<!-- ANA SAYFA -->
+<section class="page-section active" id="page-home">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">🏫 Yeni Lisanlar ve Dijital Teknolojiler</div>
+      <h1>Dijital Web Araçları Rehberi</h1>
+      <p class="hero-sub">Öğretmenler için kategorilere ayrılmış dijital araç kataloğu — topluluk, sınıf yönetimi ve medya paylaşım platformu</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="n" id="stTools">—</span><span class="l">Araç</span></div>
+        <div class="hero-stat"><span class="n" id="stCats">—</span><span class="l">Kategori</span></div>
+        <div class="hero-stat"><span class="n" id="stMembers">—</span><span class="l">Üye</span></div>
+        <div class="hero-stat"><span class="n" id="stQuestions">—</span><span class="l">Soru</span></div>
+      </div>
+      <div class="announcement-bar" id="heroDuyurular">
+        <span class="ann-badge">DUYURU</span>
+        <span id="heroDuyuruText">Yükleniyor…</span>
+      </div>
+    </div>
+  </div>
+  <div class="featured-wrap" id="featuredWrap">
+    <div class="featured-toggle" onclick="toggleFeatured()">
+      <span id="featuredToggleIcon">▾</span> <span id="featuredToggleText">MEB Platformları gizle</span>
+    </div>
+    <div class="featured-chips" id="featuredChips"></div>
+  </div>
+  <div class="toolbar-wrap">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Araç adı, açıklama veya kategori…" autocomplete="off">
+      </div>
+      <select class="filter-sel" id="catFilter"><option value="">Tüm Kategoriler</option></select>
+      <label class="toggle-wrap"><input type="checkbox" id="onlyLinked"> Bağlantısı olanlar</label>
+    </div>
+  </div>
+  <div class="results-bar"><span id="resultsText">Tüm araçlar</span><span class="count-badge" id="resultsCount">—</span></div>
+  <div class="main-grid" id="toolsGrid"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+</section>
+
+<!-- ARAÇLAR -->
+<section class="page-section" id="page-tools">
+  <div class="toolbar-wrap" style="margin-top:24px;">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput2" placeholder="Araç ara…" autocomplete="off">
+      </div>
+      <select class="filter-sel" id="catFilter2"><option value="">Tüm Kategoriler</option></select>
+      <label class="toggle-wrap"><input type="checkbox" id="onlyLinked2"> Bağlantısı olanlar</label>
+    </div>
+  </div>
+  <div class="results-bar"><span class="count-badge" id="resultsCount2">—</span></div>
+  <div class="main-grid" id="toolsGrid2"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+</section>
+
+<!-- TOPLULUK -->
+<section class="page-section" id="page-community">
+  <div class="qa-layout">
+    <div class="qa-main">
+      <div class="qa-page-head">
+        <h2>💬 Öğretmen Topluluğu</h2>
+        <button class="btn btn-teal" onclick="UI.openModal('askModal')">+ Soru Sor</button>
+      </div>
+      <div class="qa-filters">
+        <button class="qa-filter-btn active" onclick="Pages.community.setFilter('all',this)">Tümü</button>
+        <button class="qa-filter-btn" onclick="Pages.community.setFilter('unanswered',this)">Yanıtsız</button>
+        <button class="qa-filter-btn" onclick="Pages.community.setFilter('answered',this)">Yanıtlı</button>
+        <button class="qa-filter-btn" onclick="Pages.community.setFilter('mine',this)">Sorularım</button>
+      </div>
+      <div id="questionsList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+    </div>
+    <div class="qa-sidebar">
+      <div class="qa-sidebar-card">
+        <div class="qa-sidebar-title">🏷️ Popüler Etiketler</div>
+        <div id="popularTags" style="display:flex;flex-wrap:wrap;gap:6px;">
+          <div class="spinner"></div>
+        </div>
+      </div>
+      <div class="qa-sidebar-card">
+        <div class="qa-sidebar-title">🌟 En Aktif Üyeler</div>
+        <div id="topUsers"><div class="spinner"></div></div>
+      </div>
+      <div class="qa-sidebar-card" style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));color:#fff;">
+        <div class="qa-sidebar-title" style="color:var(--teal);">Topluluk Hakkında</div>
+        <p style="font-size:.82rem;opacity:.85;line-height:1.6;">Yenilikçi Sınıf öğretmenleri deneyimlerini paylaşır, sorular sorar, dijital araçlar hakkında görüş bildirir.</p>
+        <p style="font-size:.75rem;opacity:.65;margin-top:8px;">⚠️ Topluluk içerikleri üye girişi gerektirir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SINIFLARIM -->
+<section class="page-section" id="page-classes">
+  <div class="classes-layout">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+      <h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);">🏫 Sınıflarım</h2>
+      <button class="btn btn-teal" onclick="Pages.classes.openCreateModal()">+ Yeni Sınıf</button>
+    </div>
+    <div id="classesList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+    <div id="classDetailArea" class="hidden"></div>
+  </div>
+</section>
+
+<!-- STOK MEDYA -->
+<section class="page-section" id="page-media">
+  <div class="media-layout">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px;">
+      <h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);">🎬 Stok Görsel / Video</h2>
+      <button class="btn btn-teal" onclick="UI.openModal('mediaUploadModal')">⬆️ Dosya Yükle</button>
+    </div>
+    <div class="toolbar" style="margin-bottom:18px;">
+      <div class="search-box" style="flex:1;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="mediaSearch" placeholder="Ara…" oninput="Pages.media._filter.search=this.value;Pages.media.loadMedia()">
+      </div>
+      <select class="filter-sel" id="mediaCatFilter" onchange="Pages.media._filter.category=this.value;Pages.media.loadMedia()">
+        <option value="">Tüm Kategoriler</option>
+      </select>
+    </div>
+    <div class="media-grid" id="mediaGrid"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+  </div>
+</section>
+
+<!-- ARİZALAR -->
+<section class="page-section" id="page-arizalar">
+  <div class="ariz-layout">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+        <h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);">🔧 Sınıf Ekipman Arızaları</h2>
+        <button class="btn btn-teal" onclick="UI.openModal('arizaModal')">+ Arıza Bildir</button>
+      </div>
+      <div class="envanter-grid" id="envanterGrid"></div>
+      <div class="ariz-filters">
+        <button class="ariz-filter-btn active" onclick="Pages.arizalar.setFilter('all',this)">Tümü</button>
+        <button class="ariz-filter-btn" onclick="Pages.arizalar.setFilter('acik',this)">🔴 Açık</button>
+        <button class="ariz-filter-btn" onclick="Pages.arizalar.setFilter('inceleniyor',this)">🟡 İnceleniyor</button>
+        <button class="ariz-filter-btn" onclick="Pages.arizalar.setFilter('cozuldu',this)">🟢 Çözüldü</button>
+      </div>
+      <div id="arizaList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+    </div>
+    <div>
+      <div class="ariz-sidebar-card">
+        <div class="ariz-sidebar-title">📦 Sınıf Envanteri</div>
+        <div class="inv-row"><span class="inv-label">🖥️ Masaüstü</span><span class="inv-num">8</span></div>
+        <div class="inv-row"><span class="inv-label">💻 Laptop</span><span class="inv-num">12</span></div>
+        <div class="inv-row"><span class="inv-label">🤖 MEBKit Robotik</span><span class="inv-num">10</span></div>
+        <div class="inv-row"><span class="inv-label">🚗 MEBKit Mobil Robot</span><span class="inv-num">3</span></div>
+        <div class="inv-row"><span class="inv-label">🖨️ Creality K1C</span><span class="inv-num">1</span></div>
+        <div class="inv-row"><span class="inv-label">🧩 Akıl/Zeka Oyunları</span><span class="inv-num">—</span></div>
+        <div class="inv-row"><span class="inv-label">🪑 Portatif Mobilya</span><span class="inv-num">—</span></div>
+      </div>
+      <div class="ariz-sidebar-card">
+        <div class="ariz-sidebar-title">📊 Özet</div>
+        <div class="inv-row"><span class="inv-label">🔴 Açık</span><span class="inv-num" id="arizCountAcik">—</span></div>
+        <div class="inv-row"><span class="inv-label">🟡 İnceleniyor</span><span class="inv-num" id="arizCountInc">—</span></div>
+        <div class="inv-row"><span class="inv-label">🟢 Çözüldü</span><span class="inv-num" id="arizCountCoz">—</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DUYURULAR -->
+<section class="page-section" id="page-announcements">
+  <div class="main-grid">
+    <h2 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:22px;">📢 Duyurular</h2>
+    <div id="annsList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+  </div>
+</section>
+
+<!-- ZİYARETÇİ DEFTERİ -->
+<section class="page-section" id="page-guestbook">
+  <div class="gb-section">
+    <div class="gb-form-card">
+      <div style="font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:16px;">💬 Yorum Bırakın</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Adınız *</label><input class="form-input" id="gbName"></div>
+        <div class="form-group"><label class="form-label">Göreviniz</label><input class="form-input" id="gbRole" placeholder="Öğretmen, Uzman…"></div>
+        <div class="form-group"><label class="form-label">Okul / Kurum</label><input class="form-input" id="gbSchool"></div>
+        <div class="form-group form-full"><label class="form-label">Mesajınız *</label><textarea class="form-textarea" id="gbMessage" maxlength="600"></textarea></div>
+      </div>
+      <button class="btn btn-navy" onclick="submitGuestbook()">Gönder</button>
+    </div>
+    <div id="gbEntries"></div>
+  </div>
+</section>
+
+<!-- PROFİL -->
+<section class="page-section" id="page-profile">
+  <div class="main-grid"><div id="profileContent"></div></div>
+</section>
+
+<!-- ADMİN -->
+<section class="page-section" id="page-admin">
+  <div class="admin-layout">
+    <div class="admin-nav">
+      <div class="admin-nav-title">Yönetici Paneli</div>
+      <button class="admin-nav-link active" data-panel="dashboard" onclick="Pages.admin.switchPanel('dashboard')">📊 Dashboard</button>
+      <button class="admin-nav-link" data-panel="users"     onclick="Pages.admin.switchPanel('users')">👥 Üye Yönetimi</button>
+      <button class="admin-nav-link" data-panel="tools"     onclick="Pages.admin.switchPanel('tools')">🛠️ Araç Yönetimi</button>
+      <button class="admin-nav-link" data-panel="community" onclick="Pages.admin.switchPanel('community')">💬 Topluluk</button>
+      <button class="admin-nav-link" data-panel="arizalar"  onclick="Pages.admin.switchPanel('arizalar')">🔧 Arızalar</button>
+      <button class="admin-nav-link" data-panel="logs"      onclick="Pages.admin.switchPanel('logs')">📋 Denetim Logları</button>
+      <button class="admin-nav-link" data-panel="announcements" onclick="Pages.admin.switchPanel('announcements')">📢 Duyurular</button>
+      <button class="admin-nav-link" data-panel="guestbook"  onclick="Pages.admin.switchPanel('guestbook')">📝 Ziyaretçi Defteri</button>
+      <button class="admin-nav-link" data-panel="settings"  onclick="Pages.admin.switchPanel('settings')">⚙️ Ayarlar</button>
+      <hr style="border:none;border-top:1px solid var(--border);margin:10px 0;">
+      <button class="admin-nav-link" onclick="App.showPage('home')" style="color:var(--muted);">← Ana Sayfa</button>
+    </div>
+    <div class="admin-content">
+      <div class="admin-panel active" id="ap-dashboard">
+        <div class="admin-panel-head"><h2>📊 Dashboard</h2></div>
+        <div class="admin-stats-row" id="dashStats"></div>
+      </div>
+      <div class="admin-panel" id="ap-users">
+        <div class="admin-panel-head"><h2>👥 Üye Yönetimi</h2>
+          <div style="display:flex;gap:8px;">
+            <input class="form-input" id="userSearch" placeholder="Ara…" style="max-width:200px;" oninput="Pages.admin.filterUsers(this.value)">
+            <select class="filter-sel" style="min-width:120px;" onchange="Pages.admin.filterUserRole(this.value)">
+              <option value="">Tüm Roller</option>
+              <option value="teacher">Öğretmen</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Ad</th><th>E-posta</th><th>Okul / İl</th><th>Durum</th><th>Rol</th><th>İşlem</th></tr></thead><tbody id="adminUsersTbody"></tbody></table></div>
+      </div>
+      <div class="admin-panel" id="ap-tools">
+        <div class="admin-panel-head"><h2>🛠️ Araç Yönetimi</h2>
+          <button class="btn btn-teal" onclick="Pages.admin.closeToolModal();UI.openModal('addToolModal')">+ Yeni Araç</button>
+        </div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>Ad</th><th>Kategori</th><th>URL</th><th>İşlem</th></tr></thead><tbody id="adminToolsTbody"></tbody></table></div>
+      </div>
+      <div class="admin-panel" id="ap-community">
+        <div class="admin-panel-head"><h2>💬 Topluluk Moderasyonu</h2></div>
+        <div id="communityReports"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+      </div>
+      <div class="admin-panel" id="ap-arizalar">
+        <div class="admin-panel-head"><h2>🔧 Arıza Yönetimi</h2></div>
+        <div id="adminArizaList"></div>
+      </div>
+      <div class="admin-panel" id="ap-announcements">
+        <div class="admin-panel-head">
+          <h2>📢 Duyuru Yönetimi</h2>
+          <button class="btn btn-teal" onclick="UI.openModal('addAnnouncementModal')">+ Yeni Duyuru</button>
+        </div>
+        <div id="adminAnnsList"><div class="loading-overlay"><div class="spinner spinner-lg"></div></div></div>
+      </div>
+      <div class="admin-panel" id="ap-guestbook">
+        <div class="admin-panel-head"><h2>📝 Ziyaretçi Defteri Yönetimi</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div>
+            <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">⏳ Onay Bekleyen</div>
+            <div id="adminGbPending"><div class="loading-overlay"><div class="spinner"></div></div></div>
+          </div>
+          <div>
+            <div style="font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">✅ Yayındaki</div>
+            <div id="adminGbApproved"><div class="loading-overlay"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-panel" id="ap-logs">
+        <div class="admin-panel-head"><h2>📋 Denetim Logları</h2></div>
+        <div class="table-wrap"><table class="data-table"><thead><tr><th>İşlem</th><th>Kullanıcı</th><th>Detay</th><th>Tarih</th></tr></thead><tbody id="adminLogsTable"></tbody></table></div>
+      </div>
+      <div class="admin-panel" id="ap-settings">
+        <div class="admin-panel-head"><h2>⚙️ Sistem Ayarları</h2></div>
+        <div class="form-grid" style="max-width:600px;">
+          <div class="form-group form-full"><label class="form-label">Site Adı</label><input class="form-input" id="settingSiteName"></div>
+          <div class="form-group"><label class="toggle-wrap"><input type="checkbox" id="settingMaintenance"> Bakım Modu</label></div>
+          <div class="form-group"><label class="toggle-wrap"><input type="checkbox" id="settingAllowReg" checked> Yeni Kayıt Açık</label></div>
+        </div>
+        <button class="btn btn-teal" onclick="Pages.admin.saveSettings()" style="margin-top:16px;">💾 Kaydet</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MODALLER ══════════════════════════════════════════════════════════════ -->
+
+<!-- Auth -->
+<div class="modal" id="authModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">Üye Girişi</span>
+      <button class="modal-close" onclick="UI.closeModal('authModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTab" onclick="UI.switchAuthTab('login')">Giriş Yap</button>
+        <button class="auth-tab" id="registerTab" onclick="UI.switchAuthTab('register')">Üye Ol</button>
+      </div>
+      <!-- Giriş -->
+      <div class="auth-form active" id="loginForm">
+        <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" id="loginEmail" type="email"></div>
+        <div class="form-group"><label class="form-label">Şifre</label><input class="form-input" id="loginPass" type="password"></div>
+        <div class="alert" id="loginError" style="display:none;"></div>
+        <button class="btn btn-teal" id="loginBtn" onclick="UI.doLogin()" style="width:100%;">Giriş Yap</button>
+        <div class="auth-divider"><span>veya</span></div>
+        <button class="social-btn" onclick="UI.doGoogleLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google ile Giriş
+        </button>
+      </div>
+      <!-- Kayıt -->
+      <div class="auth-form" id="registerForm">
+        <div class="form-grid">
+          <div class="form-group form-full"><label class="form-label">Ad Soyad *</label><input class="form-input" id="regName"></div>
+          <div class="form-group form-full"><label class="form-label">E-posta *</label><input class="form-input" id="regEmail" type="email"></div>
+          <div class="form-group"><label class="form-label">Şifre *</label><input class="form-input" id="regPass" type="password" placeholder="En az 8 karakter"></div>
+          <div class="form-group"><label class="form-label">Şifre Tekrar *</label><input class="form-input" id="regPass2" type="password"></div>
+          <div class="form-group"><label class="form-label">İl *</label><input class="form-input" id="regIl" placeholder="Antalya"></div>
+          <div class="form-group"><label class="form-label">İlçe</label><input class="form-input" id="regIlce" placeholder="Muratpaşa"></div>
+          <div class="form-group form-full"><label class="form-label">Okul *</label><input class="form-input" id="regOkul" placeholder="Okul adı"></div>
+          <div class="form-group"><label class="form-label">Branş *</label><input class="form-input" id="regBrans" placeholder="Bilişim Teknolojileri"></div>
+          <div class="form-group"><label class="form-label">Görev Yeri</label><input class="form-input" id="regGorevYeri" placeholder="Ortaokul, Lise…"></div>
+          <div class="form-group"><label class="form-label">Kıdem (yıl)</label><input class="form-input" id="regKidem" type="number" min="0" placeholder="5"></div>
+        </div>
+        <div class="alert" id="regError" style="display:none;margin-top:8px;"></div>
+        <button class="btn btn-teal" id="registerBtn" onclick="UI.doRegister()" style="width:100%;margin-top:10px;">Kayıt Ol</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Soru detay -->
+<div class="modal" id="questionDetailModal">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <span class="modal-title">💬 Soru Detayı</span>
+      <button class="modal-close" onclick="UI.closeModal('questionDetailModal')">×</button>
+    </div>
+    <div class="modal-body" id="questionDetailBody">
+      <div class="loading-overlay"><div class="spinner spinner-lg"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Soru sor -->
+<div class="modal" id="askModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">❓ Soru Sor</span><button class="modal-close" onclick="UI.closeModal('askModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Başlık *</label><input class="form-input" id="qTitle" placeholder="Sorunuzu kısaca özetleyin…"></div>
+      <div class="form-group"><label class="form-label">Açıklama *</label><textarea class="form-textarea" id="qBody" placeholder="Detayları açıklayın…" style="min-height:110px;"></textarea></div>
+      <div class="form-group"><label class="form-label">Etiketler (virgülle ayırın)</label><input class="form-input" id="qTags" placeholder="mebkit, 3d yazıcı, canva"></div>
+      <div class="alert" id="qError" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="Pages.community.postQuestion()">📤 Gönder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sınıf oluştur -->
+<div class="modal" id="createClassModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">🏫 Yeni Sınıf</span><button class="modal-close" onclick="UI.closeModal('createClassModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Sınıf Adı *</label><input class="form-input" id="newClassName" placeholder="ör. 7-A Bilişim"></div>
+      <div class="form-group"><label class="form-label">Sınıf / Seviye</label><input class="form-input" id="newClassGrade" placeholder="ör. 7. Sınıf"></div>
+      <div class="form-group"><label class="form-label">Açıklama</label><textarea class="form-textarea" id="newClassDesc" style="min-height:70px;"></textarea></div>
+      <div class="alert" id="classAlert" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="Pages.classes.createClass()">✅ Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<!-- Öğrenci ekle -->
+<div class="modal" id="addStudentModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">👤 Öğrenci Ekle</span><button class="modal-close" onclick="UI.closeModal('addStudentModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="addStudentClassId">
+      <div class="form-grid">
+        <div class="form-group form-full"><label class="form-label">Ad Soyad *</label><input class="form-input" id="studentName"></div>
+        <div class="form-group"><label class="form-label">Okul No</label><input class="form-input" id="studentNo"></div>
+        <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" id="studentEmail" type="email"></div>
+        <div class="form-group form-full"><label class="form-label">Not</label><input class="form-input" id="studentNotes"></div>
+      </div>
+      <div class="alert" id="studentAlert" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="Pages.classes.addStudent()">✅ Ekle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toplu öğrenci ekle -->
+<div class="modal" id="bulkStudentModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">📋 Toplu Öğrenci Ekle</span><button class="modal-close" onclick="UI.closeModal('bulkStudentModal')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="bulkClassId">
+      <div class="alert alert-info">Her satıra bir öğrenci: <code>Ad Soyad, OkulNo, email</code><br>E-posta zorunlu değildir.</div>
+      <div class="form-group" style="margin-top:12px;">
+        <textarea class="form-textarea" id="bulkStudentText" style="min-height:180px;font-family:monospace;"
+          placeholder="Ahmet Yılmaz, 1023&#10;Ayşe Demir, 1024, ayse@mail.com&#10;Mehmet Kaya, 1025"></textarea>
+      </div>
+      <div class="alert" id="bulkAlert" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="Pages.classes.bulkAddStudents()">✅ Toplu Ekle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Medya yükle -->
+<div class="modal" id="mediaUploadModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">⬆️ Dosya Yükle</span><button class="modal-close" onclick="UI.closeModal('mediaUploadModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Dosya *</label><input type="file" id="mediaFileInput" class="form-input" accept="image/*,video/*,application/pdf"></div>
+      <div class="form-group"><label class="form-label">Dosya Adı</label><input class="form-input" id="mediaName" placeholder="Opsiyonel"></div>
+      <div class="form-group"><label class="form-label">Kategori</label><select class="form-select" id="mediaCat"><option value="genel">Genel</option><option value="egitim">Eğitim Görseli</option><option value="mebkit">MEBKit</option><option value="3d">3D Baskı</option><option value="robotik">Robotik</option></select></div>
+      <div class="form-group"><label class="form-label">Etiketler (virgülle)</label><input class="form-input" id="mediaTags"></div>
+      <div class="form-group"><label class="form-label">Açıklama</label><input class="form-input" id="mediaDesc" placeholder="Kısa açıklama (opsiyonel)"></div>
+      <div class="alert" id="mediaAlert" style="display:none;"></div>
+      <button class="btn btn-teal" id="mediaUploadBtn" onclick="Pages.media.upload()">⬆️ Yükle</button>
+    </div>
+  </div>
+</div>
+
+<!-- Araç ekle/düzenle modal -->
+<div class="modal" id="addToolModal">
+  <div class="modal-box wide">
+    <div class="modal-head"><span class="modal-title" id="addToolModalTitle">🛠️ Araç Ekle / Düzenle</span>
+      <button class="modal-close" onclick="Pages.admin.closeToolModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="toolEditId">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Araç Adı *</label><input class="form-input" id="toolName" placeholder="ör. Canva"></div>
+        <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="toolUrl" placeholder="https://…"></div>
+        <div class="form-group form-full"><label class="form-label">Kısa Açıklama *</label><textarea class="form-textarea" id="toolDesc" style="min-height:70px;"></textarea></div>
+        <div class="form-group"><label class="form-label">Kategori *</label>
+          <select class="form-select" id="toolCat">
+            <option value="">Seçin…</option>
+            <option>Genel amaçlı yapay zekâ araçları</option>
+            <option>Sınıf yönetimi araçları</option>
+            <option>Kodlama / programlama araçları</option>
+            <option>Etkileşimli sunum araçları</option>
+            <option>Yapay zekâ destekli araçlar</option>
+            <option>Etkileşimli beyaz tahta araçları</option>
+            <option>Artırılmış / Sanal gerçeklik uygulamaları</option>
+            <option>Anket araçları</option>
+            <option>3D model oluşturma araçları</option>
+            <option>Depolama ve dosyalama araçları</option>
+            <option>Video düzenleme araçları</option>
+            <option>Ses düzenleme araçları</option>
+            <option>Simülasyon araçları</option>
+            <option>Dijital hikâye oluşturma araçları</option>
+            <option>Çevrim içi dergi / e-kitap hazırlama araçları</option>
+            <option>Çevrim içi harita uygulamaları</option>
+            <option>Oyun tabanlı web araçları</option>
+            <option>Dinamik matematik ve geometri araçları</option>
+            <option>Çevrim içi tartışma araçları</option>
+            <option>Dijital pano / post-it araçları</option>
+            <option>Ekran kaydı alma araçları</option>
+            <option>Görsel düzenleme araçları</option>
+            <option>Kelime bulutu oluşturma araçları</option>
+            <option>Logo oluşturma araçları</option>
+            <option>Proje yönetim araçları</option>
+            <option>Çizgi roman oluşturma araçları</option>
+            <option>Grafik ve tablolama araçları</option>
+            <option>Oyunlaştırma web araçları</option>
+            <option>Web sayfası düzenleme araçları</option>
+            <option>Takvim ve planlayıcı araçlar</option>
+            <option>Poster ve afiş oluşturma araçları</option>
+            <option>Animasyon oluşturma araçları</option>
+            <option>Zihin haritası oluşturma araçları</option>
+            <option>Kavram haritası oluşturma araçları</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Logo URL</label><input class="form-input" id="toolLogo" placeholder="https://…/favicon.ico"></div>
+        <div class="form-group"><label class="form-label">Not / Ek Açıklama</label><input class="form-input" id="toolNote"></div>
+        <div class="form-group"><label class="form-label">Kimler İçin Uygun</label><input class="form-input" id="toolKimler" placeholder="ör. İlkokul, Ortaokul öğretmenleri"></div>
+        <div class="form-group"><label class="form-label">Örnek Kullanım</label><input class="form-input" id="toolOrnek" placeholder="ör. Sınıfta sunum yapma, öğrenci projesi"></div>
+        <div class="form-group">
+          <label class="toggle-wrap"><input type="checkbox" id="toolFeatured"> Öne Çıkan</label>
+          <label class="toggle-wrap" style="margin-top:8px;"><input type="checkbox" id="toolMeb"> MEB Platformu</label>
+        </div>
+      </div>
+      <div class="alert" id="toolAlert" style="display:none;margin-top:8px;"></div>
+      <div style="display:flex;gap:10px;margin-top:10px;">
+        <button class="btn btn-teal" onclick="Pages.admin.saveTool()">💾 Kaydet</button>
+        <button class="btn btn-ghost" onclick="Pages.admin.closeToolModal()">İptal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Duyuru ekle (admin) modal -->
+<div class="modal" id="addAnnouncementModal">
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">📢 Duyuru Yayınla</span><button class="modal-close" onclick="UI.closeModal('addAnnouncementModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Başlık *</label><input class="form-input" id="annTitle"></div>
+      <div class="form-group"><label class="form-label">Öncelik</label>
+        <select class="form-select" id="annPriority">
+          <option value="low">🟢 Genel</option>
+          <option value="med">🟡 Önemli</option>
+          <option value="high">🔴 Acil</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">İçerik *</label><textarea class="form-textarea" id="annBody" style="min-height:100px;"></textarea></div>
+      <div class="form-group"><label class="form-label">Hedef Kitle</label>
+        <select class="form-select" id="annTarget"><option value="all">Tüm Kullanıcılar</option><option value="members">Sadece Üyeler</option></select>
+      </div>
+      <div class="alert" id="annAlert" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="submitAnnouncement()">📢 Yayınla</button>
+    </div>
+  </div>
+</div>
+  <div class="modal-box">
+    <div class="modal-head"><span class="modal-title">🔧 Arıza Bildir</span><button class="modal-close" onclick="UI.closeModal('arizaModal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Ekipman *</label>
+          <select class="form-select" id="arizaEkipman">
+            <option value="">Seçin…</option>
+            <option>Masaüstü Bilgisayar</option><option>Laptop</option>
+            <option>MEBKit Robotik Set</option><option>MEBKit Mobil Robot</option>
+            <option>3D Yazıcı (Creality K1C)</option><option>Akıl/Zeka Oyunları</option>
+            <option>Portatif Mobilya</option><option>Diğer</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Cihaz No</label><input class="form-input" id="arizaCihazNo" placeholder="ör. Laptop #3"></div>
+        <div class="form-group form-full"><label class="form-label">Arıza Başlığı *</label><input class="form-input" id="arizaBaslik" maxlength="120"></div>
+        <div class="form-group form-full"><label class="form-label">Açıklama *</label><textarea class="form-textarea" id="arizaAciklama" style="min-height:90px;" maxlength="800"></textarea></div>
+        <div class="form-group"><label class="form-label">Öncelik</label>
+          <select class="form-select" id="arizaOncelik"><option value="normal">🟡 Normal</option><option value="acil">🔴 Acil</option><option value="dusuk">🟢 Düşük</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Bildiren</label><input class="form-input" id="arizaBildiren"></div>
+      </div>
+      <div class="alert" id="arizaFormAlert" style="display:none;"></div>
+      <button class="btn btn-teal" onclick="submitArizaForm()">📤 Bildir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div>👤 Hazırlayan: <span class="footer-teal">Ahmet ÇEÇEN</span></div>
+  <p><strong>Yenilikçi Sınıf Projesi</strong> · Yeni Lisanlar ve Dijital Teknolojiler</p>
+</footer>
+
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+<!-- ══ SCRIPTS ══════════════════════════════════════════════════════════════ -->
+<script src="/js/api.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/pages.js"></script>
+
+<script>
+// ─── Duyurular sayfası ──────────────────────────────────────────────────────
+async function loadAnnouncementsPage() {
+  const cont = document.getElementById("annsList");
+  if (!cont) return;
+  cont.innerHTML = `<div class="loading-overlay"><div class="spinner spinner-lg"></div></div>`;
+  try {
+    const { announcements } = await API.admin.announcements();
+    if (!announcements.length) {
+      cont.innerHTML = `<div class="empty"><h3>Henüz duyuru yok</h3></div>`;
+      return;
+    }
+    const prioColor = { high:"var(--danger)", med:"var(--warning)", low:"var(--success)" };
+    const prioLabel = { high:"🔴 Acil", med:"🟡 Önemli", low:"🟢 Genel" };
+    cont.innerHTML = announcements.map(a => `
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;border-left:4px solid ${prioColor[a.priority]||"var(--teal)"};">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+          <span style="font-size:.95rem;font-weight:700;color:var(--navy);">${UI.esc(a.title)}</span>
+          <span style="font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;background:${prioColor[a.priority]||"var(--teal)"};color:#fff;">${prioLabel[a.priority]||"Genel"}</span>
+        </div>
+        <div style="font-size:.88rem;color:var(--text);line-height:1.65;margin-bottom:10px;">${UI.esc(a.body||"")}</div>
+        <div style="font-size:.75rem;color:var(--muted);display:flex;gap:12px;">
+          <span>👤 ${UI.esc(a.authorName||"")}</span>
+          <span>🕐 ${a.createdAt?._seconds ? new Date(a.createdAt._seconds*1000).toLocaleDateString("tr-TR") : ""}</span>
+        </div>
+      </div>`).join("");
+  } catch(e) {
+    cont.innerHTML = `<div class="empty"><h3>Duyurular yüklenemedi</h3></div>`;
+  }
+}
+
+// ─── Guestbook sayfası ───────────────────────────────────────────────────────
+async function loadGuestbookPage() {
+  const cont = document.getElementById("gbEntries");
+  if (!cont) return;
+  cont.innerHTML = `<div class="loading-overlay"><div class="spinner spinner-lg"></div></div>`;
+  try {
+    const res  = await fetch("/api/guestbook");
+    const data = await res.json();
+    const entries = data.entries || [];
+    if (!entries.length) {
+      cont.innerHTML = `<div class="empty"><h3>Henüz yorum yok</h3><p>İlk yorumu sen yaz!</p></div>`;
+      return;
+    }
+    const stars = r => "⭐".repeat(Math.min(5, Math.max(1, parseInt(r)||5)));
+    cont.innerHTML = entries.map(e => `
+      <div class="gb-entry">
+        <div class="gb-author">${UI.esc(e.name||"")}</div>
+        ${e.role   ? `<span style="font-size:.72rem;color:var(--muted);background:var(--surface2);padding:2px 8px;border-radius:20px;border:1px solid var(--border);display:inline-block;margin-top:2px;">${UI.esc(e.role)}</span>` : ""}
+        ${e.school ? `<div style="font-size:.8rem;color:var(--navy-mid);font-weight:600;margin:5px 0;">🏫 ${UI.esc(e.school)}</div>` : ""}
+        <div style="color:#f59e0b;font-size:.9rem;margin:4px 0;">${stars(e.rating)}</div>
+        <div class="gb-text">"${UI.esc(e.message||"")}"</div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:8px;">${e.createdAt?._seconds ? new Date(e.createdAt._seconds*1000).toLocaleDateString("tr-TR") : ""}</div>
+      </div>`).join("");
+  } catch(e) {
+    cont.innerHTML = `<div class="empty"><h3>Yorumlar yüklenemedi</h3></div>`;
+  }
+}
+
+// ─── Duyuru yayınla (admin) ──────────────────────────────────────────────────
+async function submitAnnouncement() {
+  const title  = UI.val("annTitle");
+  const body   = UI.val("annBody");
+  const priority = UI.val("annPriority");
+  const target   = UI.val("annTarget");
+  if (!title || !body) { UI.showAlert("annAlert","error","Başlık ve içerik zorunlu"); return; }
+  try {
+    await API.admin.addAnnouncement({ title, body, priority, target });
+    UI.closeModal("addAnnouncementModal");
+    UI.showToast("Duyuru yayınlandı!","success");
+    loadAnnouncementsPage();
+  } catch(e) { UI.showAlert("annAlert","error",e.message||"Yayınlanamadı"); }
+}
+
+// ─── Featured toggle ────────────────────────────────────────────────────────
+function toggleFeatured() {
+  const wrap  = document.getElementById("featuredWrap");
+  const chips = wrap.querySelector(".featured-chips");
+  const icon  = document.getElementById("featuredToggleIcon");
+  const text  = document.getElementById("featuredToggleText");
+  const hidden = chips.style.display === "none";
+  chips.style.display = hidden ? "flex" : "none";
+  icon.textContent = hidden ? "▾" : "▸";
+  text.textContent  = hidden ? "MEB Platformları gizle" : "MEB Platformları göster";
+}
+
+// ─── Search / filtre ────────────────────────────────────────────────────────
+let _dt1, _dt2;
+document.getElementById("searchInput").addEventListener("input", e => {
+  clearTimeout(_dt1);
+  _dt1 = setTimeout(() => {
+    Pages.tools._filter.search = e.target.value;
+    Pages.home.renderToolGrid(Pages.tools._list);
+  }, 280);
+});
+document.getElementById("catFilter").addEventListener("change", e => {
+  Pages.tools._filter.cat = e.target.value;
+  Pages.home.renderToolGrid(Pages.tools._list);
+});
+document.getElementById("onlyLinked").addEventListener("change", e => {
+  Pages.tools._filter.linked = e.target.checked;
+  Pages.home.renderToolGrid(Pages.tools._list);
+});
+const si2 = document.getElementById("searchInput2");
+if (si2) si2.addEventListener("input", e => {
+  clearTimeout(_dt2);
+  _dt2 = setTimeout(() => { Pages.tools._filter.search = e.target.value; Pages.tools.render(); }, 280);
+});
+const cf2 = document.getElementById("catFilter2");
+if (cf2) cf2.addEventListener("change", e => { Pages.tools._filter.cat = e.target.value; Pages.tools.render(); });
+const ol2 = document.getElementById("onlyLinked2");
+if (ol2) ol2.addEventListener("change", e => { Pages.tools._filter.linked = e.target.checked; Pages.tools.render(); });
+
+// ─── Sayfa yükleyici hook'ları kaldırıldı — App.showPage doğrudan yönetiyor ─
+
+// ─── Arıza form submit ──────────────────────────────────────────────────────
+async function submitArizaForm() {
+  const data = {
+    ekipman:  document.getElementById("arizaEkipman").value,
+    baslik:   document.getElementById("arizaBaslik").value.trim(),
+    aciklama: document.getElementById("arizaAciklama").value.trim(),
+    oncelik:  document.getElementById("arizaOncelik").value,
+    cihazNo:  document.getElementById("arizaCihazNo").value.trim(),
+    bildiren: document.getElementById("arizaBildiren").value.trim(),
+  };
+  if (!data.ekipman || !data.baslik || !data.aciklama) {
+    UI.showAlert("arizaFormAlert","error","Ekipman, başlık ve açıklama zorunludur.");
+    return;
+  }
+  try {
+    await API.arizalar.add(data);
+    UI.closeModal("arizaModal");
+    UI.showToast("Arıza bildirildi!","success");
+    Pages.arizalar.fetchAndRender();
+  } catch(e) { UI.showAlert("arizaFormAlert","error",e.message||"Gönderilemedi"); }
+}
+
+// ─── Guestbook submit ────────────────────────────────────────────────────────
+async function submitGuestbook() {
+  const name = UI.val("gbName"), msg = UI.val("gbMessage");
+  if (!name || !msg) { UI.showToast("Ad ve mesaj zorunlu","warn"); return; }
+  try {
+    const res = await fetch("/api/guestbook", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ name, role: UI.val("gbRole"), school: UI.val("gbSchool"), message: msg })
+    });
+    if (!res.ok) throw new Error();
+    UI.showToast("Mesajınız alındı, onay bekliyor.","success");
+    ["gbName","gbMessage","gbRole","gbSchool"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+  } catch(e) { UI.showToast("Gönderilemedi","error"); }
+}
+
+// ─── Başlat ─────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => { App.initAuth(); });
+</script>
+</body>
+</html>
